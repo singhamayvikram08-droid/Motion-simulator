@@ -108,11 +108,6 @@ function initDb() {
 
 // --- REST API ENDPOINTS ---
 
-// Check Backend Status
-app.get("/", (req, res) => {
-    res.send("SnackDash Backend is Running 🚀");
-});
-
 // Get Inventory (returns full quantity data)
 app.get('/api/inventory', (req, res) => {
     db.all('SELECT * FROM inventory', [], (err, rows) => {
@@ -520,20 +515,15 @@ io.on('connection', (socket) => {
     });
 });
 
-// ✅ THEN add this (frontend serving)
+// Serve Vite build folder
 app.use(express.static(path.join(__dirname, "dist")));
 
-// ✅ NOTE: Using app.use() instead of app.get("*")
-// because Express 5.x crashes on app.get("*") with "PathError".
-app.use((req, res, next) => {
-    if (req.method === 'GET') {
-        res.sendFile(path.join(__dirname, "dist", "index.html"));
-    } else {
-        next();
-    }
+// Send index.html for all unknown routes (Express 5 compatible wildcard)
+app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
-// ✅ LAST
-app.listen(process.env.PORT || 3000, () => {
-    console.log("Server running 🚀");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log("Server running on port " + PORT);
 });
