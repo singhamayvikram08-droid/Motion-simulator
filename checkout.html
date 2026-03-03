@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SnackDash | Premium Snacks & Noodles</title>
+  <meta name="description"
+    content="Premium destination for Maggi, Yippee, Pasta, and Snacks. Instant cravings satisfied.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body>
+  <script>
+    if (!localStorage.getItem('snackdash_session')) {
+      window.location.href = 'index.html';
+    }
+  </script>
+
+  <div class="bg-blobs">
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div id="maintenanceOverlay" class="maintenance-overlay hidden">
+    <div class="maintenance-content">
+      <h2>We're making things better!</h2>
+      <p>SnackDash is currently undergoing scheduled maintenance. Please check back soon.</p>
+    </div>
+  </div>
+
+  <header id="header">
+    <div class="container nav">
+      <div class="logo"><a href="index.html" style="color: inherit; text-decoration: none;">SnackDash</a></div>
+      <div class="nav-links" style="display: flex; align-items: center; gap: 1.5rem;">
+        <a href="menu.html" style="color: #fff; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Menu</a>
+        <a href="orders.html" style="color: #fff; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Your
+          Orders</a>
+        <a href="checkout.html"
+          style="color: var(--primary); text-decoration: none; font-weight: 800; font-size: 0.9rem;">Checkout</a>
+        <a href="feedback.html"
+          style="color: #fff; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Feedback</a>
+        <button id="logoutBtn"
+          style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0.3rem 0.8rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.8rem; transition: all 0.2s ease;">Logout</button>
+      </div>
+    </div>
+  </header>
+
+
+  <main>
+
+    <section id="order" class="order">
+      <div class="container">
+        <div class="order-container animate">
+          <div id="orderFormWrapper">
+            <div style="text-align: center; margin-bottom: 3rem;">
+              <h2 style="font-size: 3rem; font-weight: 900; margin-bottom: 1rem;">Order Now</h2>
+              <p style="color: var(--text-dim)">Drop your details and we'll reach out to pick up your snacks!</p>
+            </div>
+
+            <form id="orderForm">
+              <div class="cart-summary-box"
+                style="background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 1.5rem; margin-bottom: 2rem; border: 1px solid var(--glass-border);">
+                <h4 style="margin-bottom: 1rem; font-weight: 800;">Your Reservation Summary</h4>
+                <div id="formCartList" style="margin-bottom: 1rem;">
+                  <p style="color: var(--text-dim)">Cart is empty</p>
+                </div>
+                <div
+                  style="display: flex; justify-content: space-between; font-weight: 900; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                  <span>Total:</span>
+                  <span id="formTotal">₹0</span>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                  <label for="name">Your Name</label>
+                  <input type="text" id="name" placeholder="John Doe" pattern="^[a-zA-Z\s]+$"
+                    title="Only uppercase and lowercase letters allowed." required>
+                </div>
+                <div class="form-group">
+                  <label for="phone">Phone Number</label>
+                  <input type="tel" id="phone" placeholder="9876543210" pattern="^[0-9]{10}$"
+                    title="Must be exactly 10 digits." required>
+                </div>
+              </div>
+              <button type="submit" id="submitOrderBtn" class="btn btn-primary" style="width: 100%;" disabled>Reserve 0
+                items</button>
+            </form>
+            <div id="successMessage" style="display: none; text-align: center; margin-top: 3rem;">
+              <div
+                style="font-size: 3rem; color: var(--primary); font-weight: 900; margin-bottom: 1rem; line-height: 1.2;">
+                Order Placed<br>Successfully!</div>
+              <p style="color: var(--text-dim); line-height: 1.5; font-size: 1.2rem;">Our person will reach you shortly.
+              </p>
+              <hr style="border-color: rgba(255,255,255,0.1); margin: 2rem 0;">
+              <h3 style="color: var(--primary); font-size: 1.5rem; margin-bottom: 1rem;">Live Order Status</h3>
+              <div id="checkoutOrderStatus"
+                style="display: inline-block; padding: 0.5rem 1.5rem; background: rgba(75, 181, 67, 0.2); color: #4BB543; border: 1px solid #4BB543; border-radius: 2rem; font-weight: 800; text-transform: uppercase; font-size: 1.2rem; letter-spacing: 1px; transition: all 0.3s ease;">
+                Confirmed
+              </div>
+              <div
+                style="margin-top: 2rem; padding: 1.5rem; background: rgba(0, 0, 0, 0.4); border-radius: 1rem; border: 2px dashed var(--primary);">
+                <span
+                  style="color: var(--text-dim); font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;">Your
+                  Tracking ID:</span><br>
+                <div style="margin-top: 0.5rem;">
+                  <strong id="orderTokenDisplay"
+                    style="font-size: 2rem; color: #fff; font-family: 'Outfit', sans-serif; letter-spacing: 4px;">---</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </section>
+  </main>
+
+  <footer style="padding: 6rem 0; text-align: center; border-top: 1px solid var(--glass-border);">
+    <div class="logo" style="margin-bottom: 1.5rem;">SnackDash</div>
+    <p style="color: var(--text-dim); font-size: 0.9rem;">&copy; 2026 SnackDash. Crafted for ultimate cravings.</p>
+  </footer>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
