@@ -968,12 +968,12 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
           const aiData = await aiRes.json();
           if (aiData.success && aiData.reply) {
             chatHistory.push({ sender: 'admin', text: aiData.reply });
-            appendMessage({
+            // Emit to socket so it broadcasts and saves to DB (new_message handles append)
+            socket.emit('send_message', {
+              orderId: chatRoomId,
               sender: 'admin',
-              text: `🤖 ${aiData.reply}`,
-              createdAt: new Date().toISOString()
+              text: `🤖 ${aiData.reply}`
             });
-            scrollToBottom();
           }
         } catch (err) {
           console.error('AI chat error:', err);
@@ -1005,16 +1005,16 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
   }
 }
 
+// --- CHAT FAB LOGIC (Customer portal only — not scanner/admin) ---
+const isCustomerPage = !window.location.pathname.includes('scanner') && !window.location.pathname.includes('admin');
+const chatFab = isCustomerPage ? document.getElementById('chatFab') : null;
+
 // Initialize on page load if order exists
 let isChatInitialized = false;
 if (activeOrderId) {
   initLiveChat(activeOrderId);
   isChatInitialized = true;
 }
-
-// --- CHAT FAB LOGIC (Customer portal only — not scanner/admin) ---
-const isCustomerPage = !window.location.pathname.includes('scanner') && !window.location.pathname.includes('admin');
-const chatFab = isCustomerPage ? document.getElementById('chatFab') : null;
 
 chatFab?.addEventListener('click', () => {
   const chatWidget = document.getElementById('chatWidget');

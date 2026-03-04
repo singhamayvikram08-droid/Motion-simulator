@@ -726,10 +726,21 @@
                 chatTitle.innerText = 'SnackBot AI Chat';
             }
 
+            const isConnectCommand = text.match(/connect\s+(?:to\s+)?(?:customer|coustomer|coustmer)/i);
+            if (activeChatOrderId !== 'ADMIN-SUPPORT' && !isConnectCommand) {
+                socket.emit('send_message', {
+                    orderId: activeChatOrderId,
+                    sender: 'admin',
+                    text
+                });
+                chatInput.value = '';
+                return;
+            }
+
             const sysMsg = chatMessages.querySelector('.chat-msg.system');
             if (sysMsg) sysMsg.remove();
             const sentDiv = document.createElement('div');
-            sentDiv.className = 'chat-msg customer';
+            sentDiv.className = 'chat-msg customer'; // Admin's own message in AI chat
             sentDiv.innerHTML = `${text}<span class="msg-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
             chatMessages.appendChild(sentDiv);
             scrollToBottom();
