@@ -1000,16 +1000,25 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
     const text = chatInput.value.trim();
     if (!text) return;
 
-    const btn = chatForm.querySelector('button[type="submit"]') as HTMLButtonElement;
-    if (btn) btn.disabled = true;
+    // FIND THE CORRECT BUTTON (Robustly)
+    const btn = chatForm.querySelector('button[type="submit"]') || chatForm.querySelector('button:last-of-type') as HTMLButtonElement;
+    if (btn) (btn as HTMLButtonElement).disabled = true;
 
-    // Safety timeout to re-enable button if network fails
+    // Safety timeout to re-enable button much faster if network lags
     const timeout = setTimeout(() => {
-      if (btn) btn.disabled = false;
-    }, 10000);
+      if (btn) (btn as HTMLButtonElement).disabled = false;
+    }, 3000);
+
+    if (!socket.connected) {
+      showToast('You are currently offline. Retrying connection...', 'error');
+      socket.connect();
+    }
 
     // Track in history
     chatHistory.push({ sender: 'customer', text });
+
+    // DEBUG LOG
+    console.log('Sending message to room:', chatRoomId, text);
 
     socket.emit('send_message', {
       orderId: chatRoomId,
@@ -1017,10 +1026,11 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
       text
     }, async (res: any) => {
       clearTimeout(timeout);
-      if (btn) btn.disabled = false;
+      if (btn) (btn as HTMLButtonElement).disabled = false;
 
-      if (res.success) {
+      if (res && res.success) {
         chatInput.value = '';
+        console.log('Message sent successfully!');
 
         // Get AI response
         try {
@@ -1029,10 +1039,10 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: text, history: chatHistory, role: 'customer' })
           });
+          if (!aiRes.ok) throw new Error('AI Server error');
           const aiData = await aiRes.json();
           if (aiData.success && aiData.reply) {
             chatHistory.push({ sender: 'admin', text: aiData.reply });
-            // Emit to socket so it broadcasts and saves to DB (new_message handles append)
             socket.emit('send_message', {
               orderId: chatRoomId,
               sender: 'admin',
@@ -1041,9 +1051,12 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
           }
         } catch (err) {
           console.error('AI chat error:', err);
+          // Don't toast for AI failures, just log it.
         }
       } else {
-        showToast('Failed to send message: ' + (res.error || 'Server error'), 'error');
+        const errorMsg = res?.error || 'Server did not acknowledge message';
+        showToast('Failed to send: ' + errorMsg, 'error');
+        console.error('Socket send error:', res);
       }
     });
   });
@@ -1116,6 +1129,8 @@ chatFab?.addEventListener('click', () => {
         phone: 'Support Chat',
         items: [],
         total: 0
+      }, (ack: any) => {
+        if (!ack?.success) console.error('Guest registration failed');
       });
 
       // Add an initial welcome message ONLY for brand new guests
@@ -1130,6 +1145,18 @@ chatFab?.addEventListener('click', () => {
     isChatInitialized = true;
   }
 });
+
+// --- INITIALIZE ALL ON DOM READY ---
+function startApp() {
+  // Live Order Tracking and Chat (for customers)
+  if (activeOrderId && !isChatInitialized) {
+    initLiveChat(activeOrderId!);
+    isChatInitialized = true;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', startApp);
+
 // --- FEEDBACK SUBMISSION ---
 const feedbackForm = document.getElementById('feedbackForm') as HTMLFormElement;
 const feedbackSuccess = document.getElementById('feedbackSuccessMessage');
@@ -2020,5 +2047,9 @@ function initScannerApp() {
   // Photo button logic moved inside initLiveChat to prevent interference on customer pages
 }
 
-// Ensure it runs
-initScannerApp();
+// Ensure it runs after DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initScannerApp);
+} else {
+  initScannerApp();
+}
