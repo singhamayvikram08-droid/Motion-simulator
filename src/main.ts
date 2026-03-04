@@ -3,7 +3,18 @@ import { io } from 'socket.io-client';
 export const socket = io('');
 
 socket.on('connect', () => {
-  console.log('Connected to SnackDash Live Server');
+  console.log('[Socket] Connected! ID:', socket.id);
+  showToast('Live connection established', 'success');
+});
+
+socket.on('connect_error', (err) => {
+  console.error('[Socket] Connection Failed:', err.message);
+  showToast('Chat link unstable. Retrying...', 'error');
+});
+
+socket.on('disconnect', (reason) => {
+  console.warn('[Socket] Disconnected:', reason);
+  if (reason === 'io server disconnect') socket.connect();
 });
 
 // --- UNIFIED AUTHENTICATION GATEWAY ---
@@ -905,8 +916,11 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
   const chatMessages = document.getElementById('chatMessages');
   const closeChatBtn = document.getElementById('closeChatBtn');
 
+  console.log('[ChatInit] Initializing for room:', chatRoomId, { hasWidget: !!chatWidget, hasForm: !!chatForm });
+
   // Allow closing the widget
   closeChatBtn?.addEventListener('click', () => {
+    console.log('[ChatInit] Closing widget');
     chatWidget?.classList.add('hidden');
   });
 
@@ -998,39 +1012,49 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
   chatForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const text = chatInput.value.trim();
+    console.log('[ChatSubmit] Text length:', text.length);
     if (!text) return;
 
     // FIND THE CORRECT BUTTON (Robustly)
-    const btn = chatForm.querySelector('button[type="submit"]') || chatForm.querySelector('button:last-of-type') as HTMLButtonElement;
+    const btn = chatForm.querySelector('button[type="submit"]') || chatForm.querySelector('button:last-of-type') || chatForm.querySelector('.btn') as HTMLButtonElement;
     if (btn) (btn as HTMLButtonElement).disabled = true;
 
     // Safety timeout to re-enable button much faster if network lags
     const timeout = setTimeout(() => {
+      console.warn('[ChatSubmit] Send timeout reached. Re-enabling button.');
       if (btn) (btn as HTMLButtonElement).disabled = false;
-    }, 3000);
+      showToast('Message send timed out. Please try again.', 'error');
+    }, 4000);
 
     if (!socket.connected) {
-      showToast('You are currently offline. Retrying connection...', 'error');
+      console.warn('[ChatSubmit] Socket disconnected - attempting reconnect');
+      showToast('Offline! Trying to reconnect...', 'error');
       socket.connect();
+      // Re-enable button if socket is not connected, as emit will likely fail
+      if (btn) (btn as HTMLButtonElement).disabled = false;
+      clearTimeout(timeout);
+      return;
     }
 
     // Track in history
     chatHistory.push({ sender: 'customer', text });
 
     // DEBUG LOG
-    console.log('Sending message to room:', chatRoomId, text);
+    console.log('[ChatSubmit] Emitting send_message to room:', chatRoomId);
 
     socket.emit('send_message', {
       orderId: chatRoomId,
       sender: 'customer',
       text
     }, async (res: any) => {
+      console.log('[ChatSubmit] Received server response:', res);
       clearTimeout(timeout);
       if (btn) (btn as HTMLButtonElement).disabled = false;
 
       if (res && res.success) {
         chatInput.value = '';
-        console.log('Message sent successfully!');
+        chatInput.focus();
+        console.log('[ChatSubmit] Success!');
 
         // Get AI response
         try {
