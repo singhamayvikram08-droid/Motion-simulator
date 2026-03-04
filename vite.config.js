@@ -12,7 +12,6 @@ export default defineConfig({
                 checkout: resolve(__dirname, 'checkout.html'),
                 orders: resolve(__dirname, 'orders.html'),
                 feedback: resolve(__dirname, 'feedback.html'),
-                bmi: resolve(__dirname, 'bmi.html'),
             }
         }
     }
