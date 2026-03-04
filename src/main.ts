@@ -2075,3 +2075,37 @@ if (document.readyState === 'loading') {
 } else {
   initScannerApp();
 }
+
+// --- MOBILE MENU TOGGLE LOGIC ---
+document.addEventListener('DOMContentLoaded', () => {
+  const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+  const navLinks = document.querySelector('.nav-links');
+
+  if (mobileMenuBtn && navLinks) {
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenuBtn.classList.toggle('active');
+      navLinks.classList.toggle('active');
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+    });
+
+    // Close menu when clicking links
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenuBtn.classList.remove('active');
+        navLinks.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+    });
+
+    // Handle logout button too
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        mobileMenuBtn.classList.remove('active');
+        navLinks.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+    }
+  }
+});
