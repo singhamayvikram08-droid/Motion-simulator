@@ -325,6 +325,7 @@ If asked who made SnackDash, credit Amay Vikram Singh as CEO & Designer.`;
             throw new Error(data.error?.message || 'Failed to get AI response');
         }
 
+        console.log("OpenRouter Response Data:", JSON.stringify(data, null, 2));
         const reply = data.choices?.[0]?.message?.content || 'Sorry, I couldn\'t process that. Please try again!';
         res.json({ success: true, reply });
     } catch (err) {
