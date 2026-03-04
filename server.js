@@ -203,7 +203,7 @@ app.post('/api/chat/upload', upload.single('photo'), (req, res) => {
 });
 
 // AI Chatbot Endpoint (uses OpenRouter REST API)
-const OPENROUTER_API_KEY = 'REDACTED';
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || 'REDACTED';
 
 // Helper: get all orders from DB
 function getOrders() {
@@ -304,21 +304,28 @@ If asked who made SnackDash, credit Amay Vikram Singh as CEO & Designer.`;
             headers: {
                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
                 'Content-Type': 'application/json',
-                'HTTP-Referer': 'http://localhost:5173',
+                'HTTP-Referer': 'https://snackdash.onrender.com', // Updated for production
                 'X-Title': 'SnackDash'
             },
             body: JSON.stringify({
-                model: 'arcee-ai/trinity-large-preview:free',
-                messages
+                model: 'google/gemini-2.0-flash-lite-preview-02-05:free',
+                messages,
+                temperature: 0.7
             })
         });
 
         const data = await apiRes.json();
+
+        if (!apiRes.ok) {
+            console.error('OpenRouter Error:', apiRes.status, data);
+            throw new Error(data.error?.message || 'Failed to get AI response');
+        }
+
         const reply = data.choices?.[0]?.message?.content || 'Sorry, I couldn\'t process that. Please try again!';
         res.json({ success: true, reply });
     } catch (err) {
         console.error('AI chat error:', err.message);
-        res.json({ success: true, reply: 'I\'m having trouble connecting right now. Please try again in a moment! 🔄' });
+        res.json({ success: true, reply: 'I\'m having trouble connecting to the brain right now. Please try again! 🔄' });
     }
 });
 
