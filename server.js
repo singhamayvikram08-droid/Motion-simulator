@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from "express";
 import path, { join } from "path";
 import { fileURLToPath } from "url";
@@ -203,9 +206,7 @@ app.post('/api/chat/upload', upload.single('photo'), (req, res) => {
 });
 
 // AI Chatbot Endpoint (uses OpenRouter REST API)
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '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';
-
-// Helper: get all orders from DB
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 function getOrders() {
     return new Promise((resolve, reject) => {
         db.all('SELECT * FROM orders ORDER BY createdAt DESC', [], (err, rows) => {
@@ -302,13 +303,13 @@ If asked who made SnackDash, credit Amay Vikram Singh as CEO & Designer.`;
         const apiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
                 'Content-Type': 'application/json',
-                'HTTP-Referer': 'https://snackdash.onrender.com', // Updated for production
+                'HTTP-Referer': 'https://snackdash.onrender.com',
                 'X-Title': 'SnackDash'
             },
             body: JSON.stringify({
-                model: 'google/gemini-2.0-flash-lite-preview-02-05:free',
+                model: 'arcee-ai/trinity-large-preview:free',
                 messages,
                 temperature: 0.7
             })
@@ -318,6 +319,9 @@ If asked who made SnackDash, credit Amay Vikram Singh as CEO & Designer.`;
 
         if (!apiRes.ok) {
             console.error('OpenRouter Error:', apiRes.status, data);
+            if (apiRes.status === 401) {
+                return res.json({ success: true, reply: 'My brain is offline. The OpenRouter API key has expired or is invalid. Please update OPENROUTER_API_KEY in the server!' });
+            }
             throw new Error(data.error?.message || 'Failed to get AI response');
         }
 
@@ -325,7 +329,7 @@ If asked who made SnackDash, credit Amay Vikram Singh as CEO & Designer.`;
         res.json({ success: true, reply });
     } catch (err) {
         console.error('AI chat error:', err.message);
-        res.json({ success: true, reply: 'I\'m having trouble connecting to the brain right now. Please try again! 🔄' });
+        res.json({ success: true, reply: `I'm having trouble connecting to my AI brain. Error: ${err.message}` });
     }
 });
 
