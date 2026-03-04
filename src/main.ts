@@ -566,7 +566,15 @@ class CartManager {
     const overlay = document.getElementById('cartOverlay');
     const sidebar = document.getElementById('cartSidebar');
 
-    const toggleCart = () => {
+    const toggleCart = (e?: Event) => {
+      if (e && (e.currentTarget as HTMLElement)?.id === 'checkoutBtn') {
+        // If it's the checkout button, let it navigate instead of just toggling if we are already on menu
+        if (sidebar?.classList.contains('open')) {
+          sidebar.classList.remove('open');
+          overlay?.classList.remove('open');
+        }
+        return;
+      }
       sidebar?.classList.toggle('open');
       overlay?.classList.toggle('open');
     };
@@ -575,6 +583,7 @@ class CartManager {
     close?.addEventListener('click', toggleCart);
     overlay?.addEventListener('click', toggleCart);
 
+    // Only toggle (close) the cart when clicking checkout if it's open, but don't prevent navigation
     document.getElementById('checkoutBtn')?.addEventListener('click', toggleCart);
 
     // Clear All Button
@@ -947,6 +956,11 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
     const btn = chatForm.querySelector('button') as HTMLButtonElement;
     if (btn) btn.disabled = true;
 
+    // Safety timeout to re-enable button if network fails
+    const timeout = setTimeout(() => {
+      if (btn) btn.disabled = false;
+    }, 10000);
+
     // Track in history
     chatHistory.push({ sender: 'customer', text });
 
@@ -955,6 +969,9 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
       sender: 'customer',
       text
     }, async (res: any) => {
+      clearTimeout(timeout);
+      if (btn) btn.disabled = false;
+
       if (res.success) {
         chatInput.value = '';
 
@@ -979,9 +996,8 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
           console.error('AI chat error:', err);
         }
       } else {
-        showToast('Failed to send message', 'error');
+        showToast('Failed to send message: ' + (res.error || 'Server error'), 'error');
       }
-      if (btn) btn.disabled = false;
     });
   });
 
@@ -994,8 +1010,10 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
     const sysMsg = chatMessages.querySelector('.chat-msg.system');
     if (sysMsg) sysMsg.remove();
 
-    div.innerHTML = `${msg.text}<span class="msg-time">${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+    const timestamp = msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    div.innerHTML = `${msg.text}<span class="msg-time">${timestamp}</span>`;
     chatMessages.appendChild(div);
+    scrollToBottom();
   }
 
   function scrollToBottom() {
