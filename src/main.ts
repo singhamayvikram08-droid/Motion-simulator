@@ -910,6 +910,53 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
     chatWidget?.classList.add('hidden');
   });
 
+  // --- PHOTO SEND IN CHAT ---
+  const chatPhotoInput = document.createElement('input');
+  chatPhotoInput.type = 'file';
+  chatPhotoInput.accept = 'image/*';
+  chatPhotoInput.style.display = 'none';
+  document.body.appendChild(chatPhotoInput);
+
+  if (chatForm) {
+    const photoBtn = document.createElement('button');
+    photoBtn.type = 'button';
+    photoBtn.innerHTML = '📎';
+    photoBtn.title = 'Send Photo';
+    photoBtn.style.cssText = 'background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 0.3rem;';
+    photoBtn.onclick = () => chatPhotoInput.click();
+
+    // Add before Send button
+    const sendBtn = chatForm.querySelector('button[type="submit"]');
+    if (sendBtn) {
+      chatForm.insertBefore(photoBtn, sendBtn);
+    } else {
+      chatForm.appendChild(photoBtn);
+    }
+  }
+
+  chatPhotoInput.addEventListener('change', async () => {
+    const file = chatPhotoInput.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    try {
+      const res = await fetch('/api/chat/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success && chatMessages) {
+        socket.emit('send_message', {
+          orderId: chatRoomId,
+          sender: 'customer',
+          text: `[Photo Shared](${data.fullUrl})`
+        });
+      }
+    } catch (err) {
+      console.error('Photo upload error:', err);
+    }
+    chatPhotoInput.value = '';
+  });
+
   // Fetch initial messages
   fetch(`/api/orders/${chatRoomId}/messages`)
     .then(res => res.json())
@@ -953,7 +1000,7 @@ function initLiveChat(chatRoomId: string, listenOrderId?: string) {
     const text = chatInput.value.trim();
     if (!text) return;
 
-    const btn = chatForm.querySelector('button') as HTMLButtonElement;
+    const btn = chatForm.querySelector('button[type="submit"]') as HTMLButtonElement;
     if (btn) btn.disabled = true;
 
     // Safety timeout to re-enable button if network fails
@@ -1043,15 +1090,17 @@ chatFab?.addEventListener('click', () => {
   if (!isChatInitialized) {
     let chatRoomId = sessionStorage.getItem('active_order_id');
 
-    // Tie chat securely to User ID if authenticated
-    const sessionRaw = localStorage.getItem('snackdash_session');
-    if (sessionRaw) {
-      try {
-        const user = JSON.parse(sessionRaw);
-        if (user && user.id) {
-          chatRoomId = user.id;
-        }
-      } catch (e) { }
+    // If no order active, fallback to User ID or Guest ID
+    if (!chatRoomId) {
+      const sessionRaw = localStorage.getItem('snackdash_session');
+      if (sessionRaw) {
+        try {
+          const user = JSON.parse(sessionRaw);
+          if (user && user.id) {
+            chatRoomId = user.id;
+          }
+        } catch (e) { }
+      }
     }
 
     if (!chatRoomId) {
@@ -1968,52 +2017,7 @@ function initScannerApp() {
     });
   }
 
-  // --- PHOTO SEND IN CHAT ---
-  const chatPhotoInput = document.createElement('input');
-  chatPhotoInput.type = 'file';
-  chatPhotoInput.accept = 'image/*';
-  chatPhotoInput.style.display = 'none';
-  document.body.appendChild(chatPhotoInput);
-
-  // Add photo button to chat form
-  const chatFormEl = document.getElementById('chatForm');
-  if (chatFormEl) {
-    const photoBtn = document.createElement('button');
-    photoBtn.type = 'button';
-    photoBtn.innerHTML = '📎';
-    photoBtn.title = 'Send Photo';
-    photoBtn.style.cssText = 'background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 0.3rem;';
-    photoBtn.addEventListener('click', () => chatPhotoInput.click());
-    chatFormEl.insertBefore(photoBtn, chatFormEl.querySelector('button[type="submit"]'));
-  }
-
-  chatPhotoInput.addEventListener('change', async () => {
-    const file = chatPhotoInput.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('photo', file);
-
-    try {
-      const res = await fetch('/api/chat/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (data.success && chatMessages) {
-        const sysMsg = chatMessages.querySelector('.chat-msg.system');
-        if (sysMsg) sysMsg.remove();
-        const div = document.createElement('div');
-        div.className = 'chat-msg customer';
-        div.innerHTML = `<img src="${data.fullUrl}" style="max-width: 200px; border-radius: 0.5rem;" alt="Shared photo"><span class="msg-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
-        chatMessages.appendChild(div);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }
-    } catch (err) {
-      console.error('Photo upload error:', err);
-    }
-    chatPhotoInput.value = '';
-  });
+  // Photo button logic moved inside initLiveChat to prevent interference on customer pages
 }
 
 // Ensure it runs
