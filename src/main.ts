@@ -4,12 +4,10 @@ export const socket = io('');
 
 socket.on('connect', () => {
   console.log('[Socket] Connected! ID:', socket.id);
-  showToast('Live connection established', 'success');
 });
 
 socket.on('connect_error', (err) => {
   console.error('[Socket] Connection Failed:', err.message);
-  showToast('Chat link unstable. Retrying...', 'error');
 });
 
 socket.on('disconnect', (reason) => {
