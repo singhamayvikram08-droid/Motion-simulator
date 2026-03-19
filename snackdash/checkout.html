@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SnackDash | Premium Snacks & Noodles</title>
+  <meta name="description"
+    content="Premium destination for Maggi, Yippee, Pasta, and Snacks. Instant cravings satisfied.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body>
+  <script>
+    if (!localStorage.getItem('snackdash_session')) {
+      window.location.href = 'index.html';
+    }
+  </script>
+
+  <div class="bg-blobs">
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div id="maintenanceOverlay" class="maintenance-overlay hidden">
+    <div class="maintenance-content">
+      <h2>We're making things better!</h2>
+      <p>SnackDash is currently undergoing scheduled maintenance. Please check back soon.</p>
+    </div>
+  </div>
+
+  <header id="header">
+    <div class="container nav">
+      <div class="logo"><a href="index.html" style="color: inherit; text-decoration: none;">SnackDash</a></div>
+      <div class="nav-right" style="display: flex; align-items: center; gap: 1.5rem;">
+        <div class="nav-links tabs" style="margin-bottom: 0; padding-bottom: 0;">
+          <a href="menu.html" style="color: #fff; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Menu</a>
+          <a href="orders.html" style="color: #fff; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Your
+            Orders</a>
+          <a href="checkout.html"
+            style="color: var(--primary); text-decoration: none; font-weight: 800; font-size: 0.9rem;">Checkout</a>
+
+          <div class="dropdown portal-switcher">
+            <button class="dropdown-btn"
+              style="color: #fff; font-weight: 600; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.2); padding: 0.35rem 0.8rem; border-radius: 0.5rem; background: transparent; display: flex; align-items: center; gap: 0.5rem;">
+              Portals
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            <div class="dropdown-content glass-card">
+              <a href="menu.html" class="portal-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+                Customer Menu
+              </a>
+              <a href="admin.html" class="portal-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <line x1="3" y1="9" x2="21" y2="9" />
+                  <line x1="9" y1="21" x2="9" y2="9" />
+                </svg>
+                Admin Dashboard
+              </a>
+              <a href="scanner.html" class="portal-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+                Scanner Portal
+              </a>
+            </div>
+          </div>
+
+          <a href="feedback.html"
+            style="color: #fff; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Feedback</a>
+          <button id="logoutBtn" class="btn btn-outline"
+            style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0.35rem 0.8rem; border-radius: 0.5rem; font-size: 0.8rem;">Logout</button>
+        </div>
+        <div class="menu-toggle" id="mobileMenuBtn">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+  <main>
+
+    <section id="order" class="order">
+      <div class="container">
+        <div class="order-container animate">
+          <div id="orderFormWrapper">
+            <div style="text-align: center; margin-bottom: 3rem;">
+              <h2 style="font-size: 3rem; font-weight: 900; margin-bottom: 1rem;">Order Now</h2>
+              <p style="color: var(--text-dim)">Drop your details and we'll reach out to pick up your snacks!</p>
+            </div>
+
+            <form id="orderForm">
+              <div class="cart-summary-box"
+                style="background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 1.5rem; margin-bottom: 2rem; border: 1px solid var(--glass-border);">
+                <h4 style="margin-bottom: 1rem; font-weight: 800;">Your Reservation Summary</h4>
+                <div id="formCartList" style="margin-bottom: 1rem;">
+                  <p style="color: var(--text-dim)">Cart is empty</p>
+                </div>
+                <div
+                  style="display: flex; justify-content: space-between; font-weight: 900; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                  <span>Total:</span>
+                  <span id="formTotal">₹0</span>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                  <label for="name">Your Name</label>
+                  <input type="text" id="name" placeholder="John Doe" pattern="^[a-zA-Z\s]+$"
+                    title="Only uppercase and lowercase letters allowed." required>
+                </div>
+                <div class="form-group">
+                  <label for="phone">Phone Number</label>
+                  <input type="tel" id="phone" placeholder="9876543210" pattern="^[0-9]{10}$"
+                    title="Must be exactly 10 digits." required>
+                </div>
+              </div>
+              <button type="submit" id="submitOrderBtn" class="btn btn-primary" style="width: 100%;" disabled>Reserve 0
+                items</button>
+            </form>
+            <div id="successMessage" style="display: none; text-align: center; margin-top: 3rem;">
+              <div
+                style="font-size: 3rem; color: var(--primary); font-weight: 900; margin-bottom: 1rem; line-height: 1.2;">
+                Order Placed<br>Successfully!</div>
+              <p style="color: var(--text-dim); line-height: 1.5; font-size: 1.2rem;">Our person will reach you shortly.
+              </p>
+              <hr style="border-color: rgba(255,255,255,0.1); margin: 2rem 0;">
+              <h3 style="color: var(--primary); font-size: 1.5rem; margin-bottom: 1rem;">Live Order Status</h3>
+              <div id="checkoutOrderStatus"
+                style="display: inline-block; padding: 0.5rem 1.5rem; background: rgba(75, 181, 67, 0.2); color: #4BB543; border: 1px solid #4BB543; border-radius: 2rem; font-weight: 800; text-transform: uppercase; font-size: 1.2rem; letter-spacing: 1px; transition: all 0.3s ease;">
+                Confirmed
+              </div>
+              <div
+                style="margin-top: 2rem; padding: 1.5rem; background: rgba(0, 0, 0, 0.4); border-radius: 1rem; border: 2px dashed var(--primary);">
+                <span
+                  style="color: var(--text-dim); font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;">Your
+                  Tracking ID:</span><br>
+                <div style="margin-top: 0.5rem;">
+                  <strong id="orderTokenDisplay"
+                    style="font-size: 2rem; color: #fff; font-family: 'Outfit', sans-serif; letter-spacing: 4px;">---</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </section>
+  </main>
+
+  <footer style="padding: 6rem 0; text-align: center; border-top: 1px solid var(--glass-border);">
+    <div class="logo" style="margin-bottom: 1.5rem;">SnackDash</div>
+    <p style="color: var(--text-dim); font-size: 0.9rem;">&copy; 2026 SnackDash. Crafted for ultimate cravings.</p>
+  </footer>
+
+  <!-- Live Chat Widget FAB -->
+  <button id="chatFab" class="chat-fab" aria-label="Open Live Chat">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <div class="unread-dot"></div>
+  </button>
+
+  <div id="chatWidget" class="chat-widget hidden">
+    <div class="chat-header">
+      <h3 style="margin: 0; font-size: 1rem;">Live Support</h3>
+      <button id="closeChatBtn"
+        style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">&times;</button>
+    </div>
+    <div id="chatMessages" class="chat-messages">
+      <div class="chat-msg system">Connecting to live support...</div>
+    </div>
+    <form id="chatForm" class="chat-input-area">
+      <input type="text" id="chatInput" placeholder="Type your message..." required>
+      <button type="submit" aria-label="Send Message">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13" />
+          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+        </svg>
+      </button>
+    </form>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

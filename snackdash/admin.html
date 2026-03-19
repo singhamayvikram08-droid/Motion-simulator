@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | SnackDash</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/src/style.css">
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <style>
+        /* Internal styles migrated to style.css */
+    </style>
+</head>
+
+<body>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <header id="header" class="scrolled">
+        <div class="container nav">
+            <div class="logo"><a href="index.html" style="color: inherit; text-decoration: none;">SnackDash <span
+                        style="font-size: 1rem; color: var(--primary);">Admin</span></a></div>
+            <div class="nav-links" style="display: flex; align-items: center; gap: 1.5rem;">
+                <div class="dropdown portal-switcher">
+                    <button class="dropdown-btn"
+                        style="color: #fff; font-weight: 600; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.2); padding: 0.35rem 0.8rem; border-radius: 0.5rem; background: transparent; display: flex; align-items: center; gap: 0.5rem;">
+                        Portals
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m6 9 6 6 6-6" />
+                        </svg>
+                    </button>
+                    <div class="dropdown-content glass-card">
+                        <a href="menu.html" class="portal-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                <polyline points="9 22 9 12 15 12 15 22" />
+                            </svg>
+                            Customer Menu
+                        </a>
+                        <a href="admin.html" class="portal-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <line x1="3" y1="9" x2="21" y2="9" />
+                                <line x1="9" y1="21" x2="9" y2="9" />
+                            </svg>
+                            Admin Dashboard
+                        </a>
+                        <a href="scanner.html" class="portal-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                                <line x1="12" y1="22.08" x2="12" y2="12" />
+                            </svg>
+                            Scanner Portal
+                        </a>
+                    </div>
+                </div>
+                <a href="menu.html"
+                    style="color: #fff; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Back to Menu</a>
+                <button id="logoutBtnTop"
+                    style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0.3rem 0.8rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.8rem; transition: all 0.2s ease;">Logout</button>
+            </div>
+            <div class="menu-toggle" id="mobileMenuBtn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Main Admin App (shown directly, login happens at index.html) -->
+        <div id="adminApp" class="admin-container" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 2.5rem; font-weight: 900; display: flex; align-items: center; margin: 0;">
+                    Live Orders <span id="newOrderBadge" class="notification-badge" style="display: none;">New!</span>
+                </h2>
+                <div
+                    style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+                    <button class="btn btn-outline" id="adminCustomerMaintenanceBtn"
+                        style="padding: 0.4rem 0.8rem; font-size: 0.75rem; white-space: nowrap;">Customer Portal:
+                        Active</button>
+                    <button class="btn btn-outline" id="adminOrderMaintenanceBtn"
+                        style="padding: 0.4rem 0.8rem; font-size: 0.75rem; white-space: nowrap;">Order Portal:
+                        Active</button>
+                    <button class="btn btn-primary" id="adminLogoutBtn"
+                        style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #ff4d4f; color: white;">Logout</button>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button id="btnActiveOrders" class="btn btn-primary" onclick="switchTab('active')">Active
+                    Orders</button>
+                <button id="btnCompletedOrders" class="btn btn-outline"
+                    onclick="switchTab('completed')">Completed</button>
+                <button id="btnFeedback" class="btn btn-outline" onclick="switchTab('feedback')">Feedback</button>
+                <button id="btnInventory" class="btn btn-outline" onclick="switchTab('inventory')">Inventory</button>
+                <button id="btnAnalytics" class="btn btn-outline" onclick="switchTab('analytics')">Sales &
+                    Analytics</button>
+            </div>
+
+            <div id="activeOrdersList">
+                <p style="text-align: center; color: var(--text-dim);">Loading active orders...</p>
+            </div>
+
+            <div id="completedOrdersList" style="display: none;">
+                <p style="text-align: center; color: var(--text-dim);">Loading completed orders...</p>
+            </div>
+
+            <div id="feedbackList" style="display: none;">
+                <p style="text-align: center; color: var(--text-dim);">Loading user feedback...</p>
+            </div>
+
+            <div id="inventoryList" style="display: none; grid-gap: 1rem;">
+                <p style="text-align: center; color: var(--text-dim);">Loading inventory...</p>
+            </div>
+
+            <div id="analyticsList" style="display: none;">
+                <p style="text-align: center; color: var(--text-dim);">Loading analytics...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Admin Chat FAB -->
+    <button id="chatFab" class="chat-fab" aria-label="Open Live Chat">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <div class="unread-dot"></div>
+    </button>
+
+    <!-- Admin Live Chat Widget -->
+    <div id="chatWidget" class="chat-widget hidden" style="width: 400px; height: 500px; right: 40px; bottom: 40px;">
+        <div class="chat-header">
+            <h3 id="chatTitle" style="margin: 0; font-size: 1.1rem;">Live Chat</h3>
+            <button onclick="closeChat()"
+                style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">&times;</button>
+        </div>
+        <div id="chatMessages" class="chat-messages" style="height: 380px;">
+            <div class="chat-msg system">Select an order to start chatting...</div>
+        </div>
+        <form id="chatForm" class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Type a message to customer..." required autocomplete="off">
+            <button type="submit" aria-label="Send Message">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // --- SESSION GUARD: Redirect if not logged in ---
+        if (localStorage.getItem('snackdash_admin_session') !== 'true') {
+            window.location.href = 'index.html';
+        }
+
+        const adminApp = document.getElementById('adminApp');
+        const newOrderBadge = document.getElementById('newOrderBadge');
+
+        // --- MAINTENANCE MODE CONTROLS ---
+        const adminCustomerMaintenanceBtn = document.getElementById('adminCustomerMaintenanceBtn');
+        const adminOrderMaintenanceBtn = document.getElementById('adminOrderMaintenanceBtn');
+
+        let isCustomerMaintenance = localStorage.getItem('snackdash_maintenance_customer') === 'true';
+        let isOrderMaintenance = localStorage.getItem('snackdash_maintenance_order') === 'true';
+
+        function updateMaintenanceBtns() {
+            if (adminCustomerMaintenanceBtn) {
+                adminCustomerMaintenanceBtn.textContent = 'Customer Portal: ' + (isCustomerMaintenance ? 'LOCKED' : 'Active');
+                adminCustomerMaintenanceBtn.style.borderColor = isCustomerMaintenance ? '#ff4d4f' : 'rgba(255,255,255,0.2)';
+                adminCustomerMaintenanceBtn.style.color = isCustomerMaintenance ? '#ff4d4f' : '#fff';
+            }
+            if (adminOrderMaintenanceBtn) {
+                adminOrderMaintenanceBtn.textContent = 'Order Portal: ' + (isOrderMaintenance ? 'LOCKED' : 'Active');
+                adminOrderMaintenanceBtn.style.borderColor = isOrderMaintenance ? '#ffbb00' : 'rgba(255,255,255,0.2)';
+                adminOrderMaintenanceBtn.style.color = isOrderMaintenance ? '#ffbb00' : '#fff';
+            }
+        }
+
+        updateMaintenanceBtns();
+
+        if (adminCustomerMaintenanceBtn) {
+            adminCustomerMaintenanceBtn.addEventListener('click', async () => {
+                isCustomerMaintenance = !isCustomerMaintenance;
+                localStorage.setItem('snackdash_maintenance_customer', String(isCustomerMaintenance));
+                updateMaintenanceBtns();
+                await fetch('/api/maintenance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'customer', isLocked: isCustomerMaintenance })
+                });
+                alert(isCustomerMaintenance ? 'Customer Portal Locked. Users will see a maintenance screen.' : 'Customer Portal Unlocked.');
+            });
+        }
+
+        if (adminOrderMaintenanceBtn) {
+            adminOrderMaintenanceBtn.addEventListener('click', async () => {
+                isOrderMaintenance = !isOrderMaintenance;
+                localStorage.setItem('snackdash_maintenance_order', String(isOrderMaintenance));
+                updateMaintenanceBtns();
+                await fetch('/api/maintenance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'order', isLocked: isOrderMaintenance })
+                });
+                alert(isOrderMaintenance ? 'Order Portal Locked. Kitchen staff will see a maintenance screen.' : 'Order Portal Unlocked.');
+            });
+        }
+
+        const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+        adminLogoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('snackdash_admin_session');
+            window.location.href = 'index.html';
+        });
+
+        const MENU_ITEMS = [
+            { id: 'maggi', name: 'Classic Maggi', type: 'Noodles', defaultPrice: 25 },
+            { id: 'yippee', name: 'Yippee Magic', type: 'Noodles', defaultPrice: 25 },
+            { id: 'pasta-cheese', name: 'Cheese Macaroni', type: 'Pasta', defaultPrice: 50 },
+            { id: 'pasta-masala', name: 'Masala Penne', type: 'Pasta', defaultPrice: 50 },
+            { id: 'pasta-mushroom', name: 'Mushroom Penne', type: 'Pasta', defaultPrice: 50 },
+            { id: 'dark-fantasy', name: 'Dark Fantasy', type: 'Snacks', defaultPrice: 15 },
+            { id: 'madangles-s', name: 'Madangles (S)', type: 'Snacks', defaultPrice: 35 },
+            { id: 'madangles-l', name: 'Madangles (L)', type: 'Snacks', defaultPrice: 70 }
+        ];
+
+        function unlockDashboard() {
+            if (adminApp) adminApp.style.display = 'block';
+            console.log('Admin connected to Live Server');
+            fetchOrders();
+            fetchFeedback();
+            fetchInventory();
+            fetchAnalytics();
+        }
+
+        // Auto-unlock since session guard already verified
+        unlockDashboard();
+
+
+        // Initialize socket connection
+        const socket = io('');
+
+        socket.on('connect', () => {
+            // Only fetch if unlocked
+            if (localStorage.getItem('snackdash_admin_session') === 'true') {
+                console.log('Admin connected to Live Server');
+                fetchOrders();
+                fetchFeedback();
+                fetchInventory();
+                fetchAnalytics();
+            }
+        });
+
+        socket.on('new_order', (order) => {
+            newOrderBadge.style.display = 'inline-block';
+            setTimeout(() => newOrderBadge.style.display = 'none', 5000);
+            fetchOrders(); // Reload list
+            fetchAnalytics(); // Update global calculations
+
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+            audio.play().catch(e => console.log('Audio play blocked:', e));
+        });
+
+        socket.on('order_status_update', (data) => {
+            fetchOrders();
+            fetchAnalytics();
+        });
+
+        socket.on('inventory_updated', () => {
+            fetchInventory();
+        });
+
+        socket.on('new_feedback', (feedback) => {
+            showToast(`📝 New Feedback from ${feedback.sender}!`, 'success');
+            if (currentTab === 'feedback') fetchFeedback();
+            // Pulse the feedback button if not active
+            const btnFeedback = document.getElementById('btnFeedback');
+            if (btnFeedback && currentTab !== 'feedback') {
+                btnFeedback.style.boxShadow = '0 0 15px var(--primary)';
+                setTimeout(() => btnFeedback.style.boxShadow = '', 3000);
+            }
+        });
+
+        let currentTab = 'active'; // Changed default tab to 'active'
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const btnActive = document.getElementById('btnActiveOrders');
+            const btnCompleted = document.getElementById('btnCompletedOrders');
+            const btnFeedback = document.getElementById('btnFeedback');
+            const btnInventory = document.getElementById('btnInventory');
+            const btnAnalytics = document.getElementById('btnAnalytics');
+
+            const listActive = document.getElementById('activeOrdersList');
+            const listCompleted = document.getElementById('completedOrdersList');
+            const listFeedback = document.getElementById('feedbackList');
+            const listInventory = document.getElementById('inventoryList');
+            const listAnalytics = document.getElementById('analyticsList');
+
+            // Reset all buttons
+            btnActive.className = 'btn btn-outline';
+            btnCompleted.className = 'btn btn-outline';
+            if (btnFeedback) btnFeedback.className = 'btn btn-outline';
+            if (btnInventory) btnInventory.className = 'btn btn-outline';
+            if (btnAnalytics) btnAnalytics.className = 'btn btn-outline';
+
+            // Hide all lists
+            listActive.style.display = 'none';
+            listCompleted.style.display = 'none';
+            if (listFeedback) listFeedback.style.display = 'none';
+            if (listInventory) listInventory.style.display = 'none';
+            if (listAnalytics) listAnalytics.style.display = 'none';
+
+            // Activate the selected tab
+            if (tab === 'active') {
+                btnActive.className = 'btn btn-primary';
+                listActive.style.display = 'grid';
+                fetchOrders();
+            } else if (tab === 'completed') {
+                btnCompleted.className = 'btn btn-primary';
+                listCompleted.style.display = 'grid';
+                fetchOrders();
+            } else if (tab === 'feedback') {
+                if (btnFeedback) btnFeedback.className = 'btn btn-primary';
+                if (listFeedback) listFeedback.style.display = 'grid';
+                fetchFeedback();
+            } else if (tab === 'inventory') {
+                if (btnInventory) btnInventory.className = 'btn btn-primary';
+                if (listInventory) listInventory.style.display = 'grid';
+                fetchInventory();
+            } else if (tab === 'analytics') {
+                if (btnAnalytics) btnAnalytics.className = 'btn btn-primary';
+                if (listAnalytics) listAnalytics.style.display = 'block'; // block, not grid for this layout
+                fetchAnalytics();
+            }
+        }
+
+        function generateOrderHTML(order) {
+            return `
+          <div class="order-card" id="order-${order.id}">
+            <div class="order-header">
+              <div>
+                <h3 style="font-size: 1.2rem; font-weight: 800;">Order #${order.id.includes('-') ? order.id.split('-')[1] : order.id}</h3>
+                <span style="color: var(--text-dim); font-size: 0.9rem;">${new Date(order.createdAt).toLocaleString()}</span>
+              </div>
+              <select class="order-status status-${order.status || 'Preparing'}" onchange="updateOrderStatus('${order.id}', this.value)">
+                <option value="Preparing" ${order.status === 'Preparing' || !order.status || order.status !== 'Completed' ? 'selected' : ''}>Preparing</option>
+                <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>Completed</option>
+              </select>
+            </div>
+            <div class="order-details">
+              <div class="customer-info">
+                <p><strong>Name:</strong> ${order.customerName || 'Guest'}</p>
+                <p><strong>Phone:</strong> ${order.phone || 'N/A'}</p>
+              </div>
+              <div class="item-list">
+                ${(order.items || []).map(item => `
+                  <div class="item-row" style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.1); padding: 0.5rem 0;">
+                    <span>${item.quantity || 1}x ${item.name || 'Unknown Item'} <span style="color: var(--text-dim); font-size: 0.8rem;">(₹${item.price || 0}/ea)</span></span>
+                    <span>₹${(item.price || 0) * (item.quantity || 1)}</span>
+                  </div>
+                `).join('')}
+                <div class="total-row">Total: ₹${order.total || 0}</div>
+              </div>
+            </div>
+            
+            <button class="btn btn-outline" style="margin-top: 1rem; width: 100%; text-align: center;" onclick="openChat('${order.userId && order.userId !== 'GUEST' ? order.userId : order.id}')">
+              Open Live Chat
+            </button>
+          </div>
+        `;
+        }
+
+        async function fetchOrders() {
+            try {
+                const res = await fetch('/api/orders');
+                const orders = await res.json();
+
+                // Active orders are those being worked on (any status other than Completed is Active for Admin)
+                const activeOrders = orders.filter(o => o.status !== 'Completed');
+                const completedOrders = orders.filter(o => o.status === 'Completed');
+
+                const listActive = document.getElementById('activeOrdersList');
+                const listCompleted = document.getElementById('completedOrdersList');
+
+                if (listActive) {
+                    if (activeOrders.length === 0) listActive.innerHTML = '<p style="text-align: center; color: var(--text-dim);">No active orders.</p>';
+                    else listActive.innerHTML = activeOrders.map(generateOrderHTML).join('');
+                }
+
+                const completedList = document.getElementById('completedOrdersList');
+                if (completedOrders.length === 0) {
+                    completedList.innerHTML = '<p style="text-align: center; color: var(--text-dim); grid-column: 1 / -1;">No completed orders yet.</p>';
+                } else {
+                    completedList.innerHTML = completedOrders.map(generateOrderHTML).join('');
+                }
+
+            } catch (err) {
+                console.error('Failed to fetch orders:', err);
+            }
+        }
+
+        async function fetchFeedback() {
+            try {
+                const res = await fetch('/api/feedback');
+                const feedbackArray = await res.json();
+
+                const listFeedback = document.getElementById('feedbackList');
+                if (!listFeedback) return;
+
+                if (feedbackArray.length === 0) {
+                    listFeedback.innerHTML = '<p style="text-align: center; color: var(--text-dim); grid-column: 1 / -1;">No feedback received yet.</p>';
+                    return;
+                }
+
+                listFeedback.innerHTML = feedbackArray.map(item => `
+                    <div class="order-card" style="border: 1px solid rgba(255,255,255,0.1); padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                            <h3 style="font-weight: 800; font-size: 1.1rem;">From: ${item.sender}</h3>
+                            <span style="color: var(--text-dim); font-size: 0.8rem;">${new Date(item.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <span style="display: inline-block; padding: 0.2rem 0.6rem; border-radius: 1rem; background: rgba(255,255,255,0.1); font-size: 0.8rem; font-weight: 700; color: var(--primary);">
+                                Type: ${item.type}
+                            </span>
+                        </div>
+                        <p style="color: rgba(255,255,255,0.9); line-height: 1.5; font-size: 0.95rem;">${item.content}</p>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Failed to fetch feedback:', err);
+            }
+        }
+
+
+        async function fetchInventory() {
+            try {
+                const res = await fetch('/api/inventory');
+                const inventoryMap = await res.json();
+
+                const listInventory = document.getElementById('inventoryList');
+                if (!listInventory) return;
+
+                listInventory.innerHTML = MENU_ITEMS.map(item => {
+                    const data = inventoryMap[item.id] || { status: 'in', stock_count: 0, sold_count: 0 };
+                    const stockCount = data.stock_count || 0;
+                    const soldCount = data.sold_count || 0;
+                    const isOut = data.status === 'out' || stockCount <= 0;
+
+                    return `
+                        <div class="order-card" style="border: 1px solid rgba(255,255,255,0.1); padding: 1.5rem; background: ${isOut ? 'rgba(255, 77, 79, 0.05)' : 'rgba(255, 255, 255, 0.05)'};">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="font-weight: 800; font-size: 1.2rem; margin-bottom: 0.2rem;">${item.name}</h3>
+                                    <div style="color: var(--text-dim); font-size: 0.9rem;">${item.type} • ₹${item.defaultPrice}</div>
+                                </div>
+                                <span style="font-weight: 700; color: ${isOut ? '#ff4d4f' : '#00ff7f'}; font-size: 0.85rem; text-transform: uppercase;">
+                                    ${isOut ? 'Out of Stock' : 'In Stock'}
+                                </span>
+                            </div>
+                            <div style="display: flex; gap: 2rem;">
+                                <div style="flex: 1; text-align: center; padding: 0.8rem; background: rgba(0, 255, 127, 0.05); border-radius: 0.8rem; border: 1px solid rgba(0,255,127,0.15);">
+                                    <div style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.3rem;">In Stock</div>
+                                    <div style="font-size: 1.8rem; font-weight: 900; color: #00ff7f;">${stockCount}</div>
+                                </div>
+                                <div style="flex: 1; text-align: center; padding: 0.8rem; background: rgba(255, 77, 79, 0.05); border-radius: 0.8rem; border: 1px solid rgba(255,77,79,0.15);">
+                                    <div style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.3rem;">Sold</div>
+                                    <div style="font-size: 1.8rem; font-weight: 900; color: #ff4d4f;">${soldCount}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error('Failed to fetch inventory:', err);
+            }
+        }
+
+        async function fetchAnalytics() {
+            try {
+                const res = await fetch('/api/orders');
+                const orders = await res.json();
+
+                let totalRevenue = 0;
+                let totalItemsSold = 0;
+                const monthlyStats = {};
+                const itemStats = {};
+
+                orders.forEach(order => {
+                    const date = new Date(order.createdAt);
+                    const monthYear = isNaN(date.getTime()) ? 'Unknown Period' : date.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+                    if (!monthlyStats[monthYear]) {
+                        monthlyStats[monthYear] = { revenue: 0, orders: 0 };
+                    }
+                    monthlyStats[monthYear].revenue += (order.total || 0);
+                    monthlyStats[monthYear].orders += 1;
+
+                    (order.items || []).forEach(item => {
+                        const itemId = item.id || 'unknown';
+                        const itemName = item.name || 'Unknown Item';
+                        const itemQty = item.quantity || 1;
+                        const itemPrice = item.price || 0;
+
+                        if (!itemStats[itemId]) {
+                            itemStats[itemId] = { name: itemId === 'unknown' ? 'Unknown' : itemName, quantity: 0, revenue: 0 };
+                        }
+                        itemStats[itemId].quantity += itemQty;
+                        itemStats[itemId].revenue += itemQty * itemPrice;
+                        totalRevenue += itemQty * itemPrice;
+                        totalItemsSold += itemQty;
+                    });
+                });
+
+                const analyticsHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div class="order-card" style="text-align: center; background: rgba(0, 255, 127, 0.05); border-color: #00ff7f; padding: 1rem;">
+                            <h3 style="color: #00ff7f; font-size: 1rem; margin-bottom: 0.5rem;">Total Revenue</h3>
+                            <div style="font-size: 2.2rem; font-weight: 900; color: #fff;">₹${totalRevenue}</div>
+                        </div>
+                        <div class="order-card" style="text-align: center; background: rgba(56, 189, 248, 0.05); border-color: #38bdf8; padding: 1rem;">
+                            <h3 style="color: #38bdf8; font-size: 1rem; margin-bottom: 0.5rem;">Total Items Sold</h3>
+                            <div style="font-size: 2.2rem; font-weight: 900; color: #fff;">${totalItemsSold}</div>
+                        </div>
+                        <div class="order-card" style="text-align: center; background: rgba(255, 126, 190, 0.05); border-color: #ff7ebe; padding: 1rem;">
+                            <h3 style="color: #ff7ebe; font-size: 1rem; margin-bottom: 0.5rem;">Active Orders</h3>
+                            <div style="font-size: 2.2rem; font-weight: 900; color: #fff;">${orders.filter(o => o.status !== 'Completed').length}</div>
+                        </div>
+                    </div>
+
+                    <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">Monthly Sales Performance</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2.5rem;">
+                        ${Object.entries(monthlyStats).sort((a, b) => new Date(b[0]) - new Date(a[0])).map(([month, data]) => `
+                            <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 1.2rem; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.4rem;">${month}</div>
+                                    <div style="font-size: 1.6rem; font-weight: 900; color: #fff;">₹${data.revenue}</div>
+                                    <div style="font-size: 0.85rem; color: var(--primary); margin-top: 0.2rem;">${data.orders} orders placed</div>
+                                </div>
+                                <div style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255, 69, 0, 0.1); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">Popular Items</h3>
+                    <div style="display: grid; gap: 0.8rem;">
+                        ${Object.values(itemStats).sort((a, b) => b.revenue - a.revenue).map(stat => `
+                            <div style="background: rgba(255,255,255,0.05); padding: 1.2rem 1.5rem; border-radius: 1rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border);">
+                                <div>
+                                    <h4 style="font-size: 1.1rem; margin: 0; color: #fff; font-weight: 800;">${stat.name}</h4>
+                                    <span style="color: var(--text-dim); font-size: 0.85rem;">${stat.quantity} units sold</span>
+                                </div>
+                                <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary);">
+                                    ₹${stat.revenue}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                const listAnalytics = document.getElementById('analyticsList');
+                if (listAnalytics) {
+                    listAnalytics.innerHTML = analyticsHTML;
+                }
+            } catch (err) {
+                console.error('Failed to fetch analytics:', err);
+                const listAnalytics = document.getElementById('analyticsList');
+                if (listAnalytics) {
+                    listAnalytics.innerHTML = '<p style="text-align: center; color: #ff4d4f;">Failed to load analytics.</p>';
+                }
+            }
+        }
+
+
+        async function updateOrderStatus(id, status) {
+            try {
+                await fetch(`/api/orders/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+            } catch (err) {
+                console.error('Failed to update status:', err);
+            }
+        }
+
+        let activeChatOrderId = null;
+        const chatWidget = document.getElementById('chatWidget');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const chatTitle = document.getElementById('chatTitle');
+        const chatFab = document.getElementById('chatFab');
+
+        // FAB toggle
+        if (chatFab) {
+            chatFab.addEventListener('click', () => {
+                chatWidget.classList.toggle('hidden');
+                chatFab.classList.remove('has-unread'); // Clear red dot when opened
+            });
+        }
+
+        function closeChat() {
+            chatWidget.classList.add('hidden');
+            activeChatOrderId = null;
+        }
+
+        async function openChat(id) {
+            activeChatOrderId = id;
+            chatTitle.innerText = `Chatting with Order #${id.split('-')[1]}`;
+            chatWidget.classList.remove('hidden');
+            if (chatFab) chatFab.classList.remove('has-unread'); // Clear red dot
+
+            socket.emit('join_order_room', id);
+
+            try {
+                const res = await fetch(`/api/orders/${id}/messages`);
+                const messages = await res.json();
+
+                chatMessages.innerHTML = '';
+                if (messages.length === 0) {
+                    chatMessages.innerHTML = '<div class="chat-msg system">No messages yet. Say hi!</div>';
+                } else {
+                    messages.forEach(msg => appendMessage(msg));
+                    scrollToBottom();
+                }
+            } catch (err) {
+                console.error('Failed to load messages', err);
+            }
+        }
+
+        socket.on('new_message', (msg) => {
+            if (msg.orderId === activeChatOrderId) {
+                appendMessage(msg);
+                scrollToBottom();
+            }
+            // Show red dot if chat is hidden and message is from customer
+            if (msg.sender === 'customer' && chatWidget.classList.contains('hidden') && chatFab) {
+                chatFab.classList.add('has-unread');
+            }
+        });
+        const adminChatHistory = [];
+        let adminStaffChatMode = false;
+
+        // Listen for staff chat messages
+        socket.on('staff_new_message', (msg) => {
+            if (!adminStaffChatMode) return;
+            if (msg.sender === 'admin') return; // Don't echo our own messages
+            const div = document.createElement('div');
+            div.className = 'chat-msg admin';
+            div.innerHTML = `📡 <b>Scanner:</b> ${msg.text}<span class="msg-time">${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+            chatMessages.appendChild(div);
+            scrollToBottom();
+        });
+
+        socket.on('staff_system', (data) => {
+            if (!adminStaffChatMode) return;
+            const div = document.createElement('div');
+            div.className = 'chat-msg system';
+            div.innerHTML = `🔗 ${data.text}`;
+            chatMessages.appendChild(div);
+            scrollToBottom();
+        });
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // Detect code 1278 to enter staff chat mode
+            if (text === '1278') {
+                adminStaffChatMode = true;
+                socket.emit('join_staff_chat', 'Admin');
+                chatTitle.innerText = '🔗 Direct Staff Chat';
+                chatMessages.innerHTML = '<div class="chat-msg system">🔗 Connected to Staff Chat. You can now talk directly with Scanner staff.</div>';
+                chatInput.value = '';
+                return;
+            }
+
+            // Detect end12 to exit staff chat and return to AI
+            if (text === 'end12' && adminStaffChatMode) {
+                adminStaffChatMode = false;
+                activeChatOrderId = null;
+                chatTitle.innerText = 'SnackBot AI Chat';
+                chatMessages.innerHTML = '<div class="chat-msg system">Staff chat ended. SnackBot AI is back! 🤖</div>';
+                chatInput.value = '';
+                return;
+            }
+
+            // --- STAFF CHAT MODE ---
+            if (adminStaffChatMode) {
+                const sysMsg = chatMessages.querySelector('.chat-msg.system');
+                if (sysMsg && sysMsg.textContent.includes('Connected')) sysMsg.remove();
+                const sentDiv = document.createElement('div');
+                sentDiv.className = 'chat-msg customer';
+                sentDiv.innerHTML = `${text}<span class="msg-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+                chatMessages.appendChild(sentDiv);
+                scrollToBottom();
+                chatInput.value = '';
+                socket.emit('staff_message', { sender: 'admin', text });
+                return;
+            }
+
+            // --- NORMAL AI CHAT MODE ---
+            if (!activeChatOrderId) {
+                activeChatOrderId = 'ADMIN-SUPPORT';
+                socket.emit('join_order_room', activeChatOrderId);
+                if (chatTitle) chatTitle.innerText = 'SnackBot AI Chat';
+            }
+
+            // Add a "Direct Chat with Scanner" helper button if not in staff mode
+            if (!adminStaffChatMode && chatMessages && !chatMessages.querySelector('.staff-connect-prompt')) {
+                const promptDiv = document.createElement('div');
+                promptDiv.className = 'chat-msg system staff-connect-prompt';
+                promptDiv.innerHTML = `Need to talk to Scanner Staff? <button class="btn btn-outline" style="padding: 0.2rem 0.6rem; font-size: 0.7rem; border-color: var(--primary); color: var(--primary); margin-left: 0.5rem;" onclick="document.getElementById('chatInput').value='1278'; document.getElementById('chatForm').dispatchEvent(new Event('submit'));">Connect Now</button>`;
+                chatMessages.appendChild(promptDiv);
+            }
+
+            const isConnectCommand = text.match(/connect\s+(?:to\s+)?(?:customer|coustomer|coustmer)/i);
+            if (activeChatOrderId !== 'ADMIN-SUPPORT' && !isConnectCommand) {
+                socket.emit('send_message', {
+                    orderId: activeChatOrderId,
+                    sender: 'admin',
+                    text
+                });
+                chatInput.value = '';
+                return;
+            }
+
+            const sysMsg = chatMessages.querySelector('.chat-msg.system');
+            if (sysMsg) sysMsg.remove();
+            const sentDiv = document.createElement('div');
+            sentDiv.className = 'chat-msg customer'; // Admin's own message in AI chat
+            sentDiv.innerHTML = `${text}<span class="msg-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+            chatMessages.appendChild(sentDiv);
+            scrollToBottom();
+            chatInput.value = '';
+            adminChatHistory.push({ sender: 'customer', text });
+
+            try {
+                const aiRes = await fetch('/api/chat/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text, history: adminChatHistory, role: 'admin' })
+                });
+                const aiData = await aiRes.json();
+
+                if (aiData.action === 'connect_to_customer' && aiData.orderId) {
+                    activeChatOrderId = aiData.orderId;
+                    socket.emit('join_order_room', aiData.orderId);
+                    chatTitle.innerText = `Chat: Order #${aiData.orderId.split('-')[1]}`;
+                    try {
+                        const msgRes = await fetch(`/api/orders/${aiData.orderId}/messages`);
+                        const msgs = await msgRes.json();
+                        chatMessages.innerHTML = '';
+                        if (msgs.length > 0) { msgs.forEach(msg => appendMessage(msg)); scrollToBottom(); }
+                    } catch (e) { console.error(e); }
+                }
+
+                if (aiData.success && aiData.reply) {
+                    adminChatHistory.push({ sender: 'admin', text: aiData.reply });
+                    const div = document.createElement('div');
+                    div.className = 'chat-msg admin';
+                    div.innerHTML = `🤖 ${aiData.reply}<span class="msg-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+                    chatMessages.appendChild(div);
+                    scrollToBottom();
+                }
+            } catch (err) {
+                console.error('AI chat error:', err);
+            }
+        });
+
+        function appendMessage(msg) {
+            const div = document.createElement('div');
+            div.className = `chat-msg ${msg.sender === 'admin' ? 'customer' : 'admin'}`;
+
+            const sysMsg = chatMessages.querySelector('.chat-msg.system');
+            if (sysMsg) sysMsg.remove();
+
+            div.innerHTML = `${msg.text}<span class="msg-time">${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+            chatMessages.appendChild(div);
+        }
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // --- ADMIN CHAT PHOTO SEND ---
+        const adminPhotoInput = document.createElement('input');
+        adminPhotoInput.type = 'file';
+        adminPhotoInput.accept = 'image/*';
+        adminPhotoInput.style.display = 'none';
+        document.body.appendChild(adminPhotoInput);
+
+        const adminPhotoBtn = document.createElement('button');
+        adminPhotoBtn.type = 'button';
+        adminPhotoBtn.className = 'chat-photo-btn';
+        adminPhotoBtn.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                </svg>`;
+        adminPhotoBtn.style.cssText = 'background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; padding: 0.5rem; display: flex; align-items: center; justify-content: center; transition: color 0.2s; flex-shrink: 0;';
+        adminPhotoBtn.onmouseover = () => adminPhotoBtn.style.color = 'var(--primary)';
+        adminPhotoBtn.onmouseout = () => adminPhotoBtn.style.color = 'rgba(255,255,255,0.5)';
+        adminPhotoBtn.onclick = () => adminPhotoInput.click();
+
+        chatForm.insertBefore(adminPhotoBtn, chatForm.querySelector('button[type="submit"]'));
+
+        adminPhotoInput.addEventListener('change', async () => {
+            const file = adminPhotoInput.files?.[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('photo', file);
+            try {
+                const res = await fetch('/api/chat/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const sysMsg = chatMessages.querySelector('.chat-msg.system');
+                    if (sysMsg) sysMsg.remove();
+                    const div = document.createElement('div');
+                    div.className = 'chat-msg customer';
+                    div.innerHTML = `<img src="${data.fullUrl}" style="max-width: 200px; border-radius: 0.5rem;" alt="Photo"><span class="msg-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+                    chatMessages.appendChild(div);
+                    scrollToBottom();
+                }
+            } catch (err) {
+                console.error('Photo upload error:', err);
+            }
+            adminPhotoInput.value = '';
+        });
+    </script>
+</body>
+
+</html>

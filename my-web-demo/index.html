@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modern BMI Calculator | Premium Health</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;700&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <main>
+    <section class="hero">
+      <div class="hero__content">
+        <h1>Body Mass Index Calculator</h1>
+        <p>
+          Better understand your weight in relation to your height using our
+          body mass index (BMI) calculator. While BMI is not the sole
+          determinant of a healthy weight, it offers a valuable starting
+          point to evaluate your overall health and well-being.
+        </p>
+      </div>
+      <div class="calculator-card">
+        <h2>Enter your details below</h2>
+        <div class="unit-toggle">
+          <label>
+            <input type="radio" name="unit" value="metric" checked />
+            Metric
+          </label>
+          <label>
+            <input type="radio" name="unit" value="imperial" />
+            Imperial
+          </label>
+        </div>
+
+        <div class="input-group metric-inputs">
+          <div class="input-field">
+            <label for="height-cm">Height</label>
+            <input type="number" id="height-cm" placeholder="0" />
+            <span>cm</span>
+          </div>
+          <div class="input-field">
+            <label for="weight-kg">Weight</label>
+            <input type="number" id="weight-kg" placeholder="0" />
+            <span>kg</span>
+          </div>
+        </div>
+
+        <div class="input-group imperial-inputs hidden">
+          <div class="input-field">
+            <label for="height-ft">Height</label>
+            <input type="number" id="height-ft" placeholder="0" />
+            <span>ft</span>
+          </div>
+          <div class="input-field">
+            <input type="number" id="height-in" placeholder="0" />
+            <span>in</span>
+          </div>
+          <div class="input-field">
+            <label for="weight-st">Weight</label>
+            <input type="number" id="weight-st" placeholder="0" />
+            <span>st</span>
+          </div>
+          <div class="input-field">
+            <input type="number" id="weight-lbs" placeholder="0" />
+            <span>lbs</span>
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="welcome-message">
+            <h3>Welcome!</h3>
+            <p>
+              Enter your height and weight and you'll see your BMI result
+              here
+            </p>
+          </div>
+          <div class="bmi-result hidden">
+            <div class="bmi-value">
+              <p>Your BMI is...</p>
+              <span id="bmi-score">23.4</span>
+            </div>
+            <div class="bmi-interpretation">
+              <p>
+                Your BMI suggests you're a healthy weight. Your ideal weight
+                is between <span id="ideal-weight-range">63.3kgs - 85.2kgs</span>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
