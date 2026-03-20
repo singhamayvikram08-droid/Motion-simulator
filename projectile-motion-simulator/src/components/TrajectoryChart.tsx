@@ -123,8 +123,8 @@ const TrajectoryChart: React.FC<Props> = ({ u, theta, g, timeStep, airResistance
 
     const opts: ChartOptions<'scatter'> = {
         responsive: true,
-        maintainAspectRatio: true,
-        aspectRatio: window.innerWidth < 768 ? 1.2 : 2,
+        maintainAspectRatio: false,
+        resizeDelay: 200,
         animation: { duration: 0 },
         layout: { padding: { top: 15, right: 15, bottom: 5, left: 5 } },
         plugins: {
