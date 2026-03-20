@@ -123,7 +123,8 @@ const TrajectoryChart: React.FC<Props> = ({ u, theta, g, timeStep, airResistance
 
     const opts: ChartOptions<'scatter'> = {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
+        aspectRatio: window.innerWidth < 768 ? 1.2 : 2,
         animation: { duration: 0 },
         layout: { padding: { top: 15, right: 15, bottom: 5, left: 5 } },
         plugins: {
@@ -158,14 +159,14 @@ const TrajectoryChart: React.FC<Props> = ({ u, theta, g, timeStep, airResistance
                 grid: { color: isDarkMode ? 'rgba(51,65,85,0.25)' : 'rgba(226,232,240,0.5)' },
                 ticks: { color: isDarkMode ? '#334155' : '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } },
                 min: 0,
-                suggestedMax: data.actualR * 1.1,
+                max: Math.ceil((data.actualR * 1.1) / 10) * 10,
             },
             y: {
                 title: { display: true, text: 'Height (m)', color: isDarkMode ? '#475569' : '#94a3b8', font: { family: 'Inter', size: 12, weight: 'bold' as const } },
                 grid: { color: isDarkMode ? 'rgba(51,65,85,0.25)' : 'rgba(226,232,240,0.5)' },
                 ticks: { color: isDarkMode ? '#334155' : '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } },
                 min: 0,
-                suggestedMax: data.H * 1.3,
+                max: Math.ceil((data.H * 1.3) / 5) * 5,
             },
         },
     };
