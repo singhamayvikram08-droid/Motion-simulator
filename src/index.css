@@ -298,9 +298,8 @@ html.light .space-bg::after {
 
 /* ====== CHART CONTAINER ====== */
 .chart-container {
-  flex: 1;
+  height: 450px;
   padding: 1.25rem;
-  min-height: 420px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -786,7 +785,6 @@ input[type=range]::-moz-range-thumb {
   .chart-container {
     min-height: 350px;
     height: 350px;
-    aspect-ratio: 1.2;
   }
 }
 
