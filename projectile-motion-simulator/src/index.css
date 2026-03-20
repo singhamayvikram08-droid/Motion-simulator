@@ -784,7 +784,9 @@ input[type=range]::-moz-range-thumb {
   }
 
   .chart-container {
-    min-height: 300px;
+    min-height: 350px;
+    height: 350px;
+    aspect-ratio: 1.2;
   }
 }
 
