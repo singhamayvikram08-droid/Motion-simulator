@@ -404,21 +404,9 @@ nav {
   display: flex;
   align-items: center;
   gap: 1rem;
-  scroll-margin-top: 110px;
-
-  /* Sticky Header Behavior */
-  position: sticky;
-  top: 110px;
-  /* Sits below main navigation (55px) and category nav (~55px) */
-  z-index: 80;
-  background: rgba(7, 11, 20, 0.85);
-  /* Dark blur background so standard text doesn't clash */
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 1rem;
+  scroll-margin-top: 130px;
+  padding: 0.8rem 1rem;
   border-radius: 1rem;
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .category-title::after {
@@ -490,25 +478,13 @@ nav {
   height: 100%;
   object-fit: cover;
   transition: transform 0.8s ease;
-  animation: float 4s ease-in-out infinite;
 }
 
 .card:hover .card-img {
   transform: scale(1.1);
-  animation-play-state: paused;
 }
 
-@keyframes float {
 
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-}
 
 .card-content h3 {
   font-size: 1.4rem;
