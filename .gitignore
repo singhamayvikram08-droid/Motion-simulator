@@ -20,3 +20,19 @@ node_modules
 *.njsproj
 *.sln
 *.sw?
+
+# Environment & credentials
+.env
+.env*.local
+*.env
+!*.env.example
+
+# Next.js & Python
+.next/
+*.tsbuildinfo
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.db
+scratch/
