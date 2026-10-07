@@ -1,0 +1,50 @@
+# ==============================================================================
+# RENDER BLUEPRINT (INFRASTRUCTURE AS CODE)
+# Student AI Digital Twin & Ecosystem Services
+# ==============================================================================
+# Connect this repo in Render -> New -> Blueprint
+# Render will auto-deploy the services and re-deploy on every git push!
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Student AI Digital Twin - Next.js Web App
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: student-digital-twin
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: digital-twin
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: NEXT_PUBLIC_APP_ENV
+        value: production
+      # Configure in Render dashboard to match your deployed backend URL
+      # e.g., https://student-digital-twin-api.onrender.com
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+
+  # ----------------------------------------------------------------------------
+  # 2. Student AI Digital Twin - FastAPI Python Backend
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: student-digital-twin-api
+    runtime: python
+    plan: free
+    region: oregon
+    rootDir: digital-twin/ai-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
