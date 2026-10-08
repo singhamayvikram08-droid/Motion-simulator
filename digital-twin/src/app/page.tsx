@@ -2734,13 +2734,13 @@ export default function Dashboard() {
     const classesNeeded = matchedSubject.prediction?.classes_needed_for_target ?? Math.max(0, Math.ceil(((target / 100) * cond - att) / (1 - target / 100)));
     const nextPctIfBunk = ((att / ((cond || 1) + 1)) * 100);
 
-    // 1. Emotion & Appearance & Vision inquiries
-    const isEyeQuery = /\b(where are you|what are you doing|eyes|aankh|kahan ho|dikh nahi rahe)\b/i.test(msg);
-    const isFaceQuery = /\b(look|see|face|chehra|expression|how do i look|can you see me)\b/i.test(msg);
-    const isSadQuery = /\b(sad|down|upset|crying|depressed|udas|dard)\b/i.test(msg);
-    const isHappyQuery = /\b(happy|khush|smile|smiling|joy)\b/i.test(msg);
+    // 1. Emotion & Appearance & Vision inquiries (strictly scoped to explicit appearance/camera questions)
+    const isAppearanceQuery = /\b(how do i look|my expression|look at my face|can you see my face|can you see me|kaisa lag raha hu|mera chehra|how am i looking|my face)\b/i.test(msg);
+    const isExplicitEyeQuery = /\b(can you see my eyes|aankhein dikh rahi|meri aankhein|are my eyes visible)\b/i.test(msg);
+    const isSadQuery = /\b(why am i sad|i am sad|feeling sad|i feel depressed|feeling down|bahut udas|dard|enquire sad)\b/i.test(msg);
+    const isHappyQuery = /\b(why am i happy|i am happy|feeling happy|feeling joyful|bahut khush|enquire happy)\b/i.test(msg);
 
-    if (isEyeQuery || (!isCameraActive && isFaceQuery)) {
+    if (isAppearanceQuery || isExplicitEyeQuery) {
       if (!isCameraActive) {
         if (effectiveLang === 'hi') return `अरे ${userName}! तुम्हारा कैमरा अभी बंद है। कैमरा ऑन करो तो मैं तुम्हारी एक्सप्रेशन देख सकूँगा!`;
         if (effectiveLang === 'kn') return `ಹೇ ${userName}, ಕ್ಯಾಮೆರಾ ಆಫ್ ಆಗಿದೆ! ಕ್ಯಾಮೆರಾ ಆನ್ ಮಾಡಿದ್ರೆ ನಾನು ನಿನ್ನನ್ನ ನೋಡಬಹುದು.`;
@@ -2759,14 +2759,14 @@ export default function Dashboard() {
       return `I'm right here with you on screen, ${userName}! I can see your eyes and you're locked in (${detectedEmotion?.focusScore || 90}% focus). What are you working on right now?`;
     }
 
-    if (isSadQuery || (detectedEmotion && detectedEmotion.hasFace && detectedEmotion.label.includes('Sad'))) {
+    if (isSadQuery || (isAppearanceQuery && detectedEmotion && detectedEmotion.hasFace && detectedEmotion.label.includes('Sad'))) {
       if (effectiveLang === 'hi') return `अरे ${userName}... तुम आज उदास लग रहे हो भाई। क्या हुआ, कॉलेज या पढ़ाई में कोई टेंशन है? बेझिझक बताओ, हम दोनों मिलकर संभाल लेंगे!`;
       if (effectiveLang === 'kn') return `ಹೇ ${userName}... ಇವತ್ತು ಯಾಕೆ ಬೇಸರದಲ್ಲಿದ್ದೀಯಾ ಮಗಾ? ಏನಾಯ್ತು? ಟೆನ್ಷನ್ ತಗೋಬೇಡ, ನಾನು ನಿನ್ನ ಜೊತೆ ಇದ್ದೀನಿ!`;
       if (effectiveLang === 'te') return `హే ${userName}... ఈరోజు ఎందుకు బాధగా ఉన్నావ్ బావా? ఏమైంది? టెన్షన్ పడకు, మనం చూసుకుందాం!`;
       return `Hey ${userName}... why are you feeling sad today? Did something happen with classes or exams? Talk to me—I've got your back!`;
     }
 
-    if (isHappyQuery || (detectedEmotion && detectedEmotion.hasFace && detectedEmotion.label.includes('Happy'))) {
+    if (isHappyQuery || (isAppearanceQuery && detectedEmotion && detectedEmotion.hasFace && detectedEmotion.label.includes('Happy'))) {
       if (effectiveLang === 'hi') return `अरे वाह ${userName}! आज इतने खुश क्यों हो भाई? कोई खुशखबरी मिली क्या या टेस्ट बढ़िया गया? बताओ मुझे भी! 😄`;
       if (effectiveLang === 'kn') return `ಹೇ ${userName}! ಇವತ್ತು ಯಾಕೆ ಇಷ್ಟು ಖುಷಿಯಾಗಿದ್ದೀಯಾ ಮಗಾ? ಏನಾದ್ರೂ ಗುಡ್ ನ್ಯೂಸ್ ಇದ್ಯಾ? ಹೇಳು! 😄`;
       if (effectiveLang === 'te') return `హే ${userName}! ఈరోజు ఎందుకు ఇంత హ్యాపీగా ఉన్నావ్ బావా? ఏంటి విశేషం? చెప్పు! 😄`;
@@ -2872,6 +2872,66 @@ export default function Dashboard() {
       return `Take a slow, deep breath, ${userName}. I hear you, and you are not alone in this. Your academic trajectory is NOT ruined, and we have a concrete path forward. We will prioritize your highest-risk classes first, calculate exact recovery numbers, and leverage your approved OD/medical exemptions. We've got this step-by-step.`;
     }
 
+    // 7. General Greetings & Twin Identity
+    if (/^(hi|hello|hey|yo|sup|hola|namaste|vanakkam|namaskara|good (morning|afternoon|evening))\b/i.test(msg) || /^(who are you|what can you do|introduce yourself|tell me about yourself)\b/i.test(msg)) {
+      if (effectiveLang === 'hi') {
+        return `नमस्ते ${userName}! मैं तुम्हारा AI डिजिटल ट्विन और एकेडमिक कंसल्टेंट हूँ। मैं तुम्हारी अटेंडेंस एनालिसिस, सेफ बंक्स, एग्जाम प्रिपरेशन, कोडिंग, डेटा स्ट्रक्चर्स और सभी टेक्निकल विषयों में मदद करने के लिए तैयार हूँ। बताओ आज क्या पढ़ना या प्लान करना है?`;
+      }
+      if (effectiveLang === 'kn') {
+        return `ನಮಸ್ಕಾರ ${userName}! ನಾನು ನಿನ್ನ AI ಡಿಜಿಟಲ್ ಟ್ವಿನ್ ಮತ್ತು ಅಕಾಡೆಮಿಕ್ ಕನ್ಸಲ್ಟೆಂಟ್. ಹಾಜರಾತಿ ಪ್ರಿಡಿಕ್ಷನ್, ಸೇಫ್ ಬಂಕ್ಸ್, ಎಕ್ಸಾಮ್ ಪ್ರಿಪರೇಷನ್ ಮತ್ತು ಕೋಡಿಂಗ್ ಪ್ರಶ್ನೆಗಳಿಗೆ ನಾನು ನಿನಗೆ ಸಹಾಯ ಮಾಡಬಲ್ಲೆ. ಇವತ್ತು ಏನು ಕಲಿಯೋಣ?`;
+      }
+      if (effectiveLang === 'te') {
+        return `నమస్కారం ${userName}! నేను నీ AI డిజిటల్ ట్విన్ మరియు అకడమిక్ కన్సల్టెంట్. హాజరు ప్రిడిక్షన్స్, సేఫ్ బంక్స్, ఎగ్జామ్ ప్రిపరేషన్ మరియు కోడింగ్ సబ్జెక్ట్స్ లో నీకు పూర్తి సాయం చేస్తాను. ఈరోజు ఏం చేద్దాం?`;
+      }
+      return `Hey ${userName}! I'm your AI Academic Twin & Engineering Consultant. I track your real-time course attendance, forecast safe bunks, calculate CIA/End-Sem grade targets, and assist you with coding, algorithms, and technical concepts. What are you working on right now?`;
+    }
+
+    // 8. Computer Science & Software Engineering Knowledge Engine
+    if (/\b(dynamic programming|dp|memoization|tabulation)\b/i.test(msg)) {
+      return `**Dynamic Programming (DP)** is an optimization strategy for problems with **Overlapping Subproblems** and **Optimal Substructure**.\n\n**Two Core Approaches:**\n1. **Top-Down (Memoization)**: Solve recursively and cache state outputs so repeated subproblems take $O(1)$ time (e.g., Fibonacci in $O(N)$ vs $O(2^N)$).\n2. **Bottom-Up (Tabulation)**: Build solutions iteratively from base cases up to the target state using a table/array.\n\n**Classic DP Problems:**\n• 0/1 Knapsack\n• Longest Common Subsequence (LCS)\n• Coin Change (Min coins & total combinations)\n• Edit Distance (Levenshtein)\n• Longest Increasing Subsequence (LIS)`;
+    }
+
+    if (/\b(recursion|recursive)\b/i.test(msg)) {
+      return `**Recursion** is an algorithmic technique where a function solves a problem by calling itself with smaller inputs.\n\n**Key Components:**\n1. **Base Case**: The termination condition that halts execution and prevents stack overflow.\n2. **Recursive Step**: The self-call that breaks down problem complexity toward the base case.\n\n⚠️ Every call pushes a frame onto the call stack ($O(N)$ space). For large $N$, consider tail call elimination or converting to an iterative approach.`;
+    }
+
+    if (/\b(linked list|array vs linked list|arrays? vs linked lists?)\b/i.test(msg)) {
+      return `**Arrays vs Linked Lists:**\n\n• **Memory**: Arrays use contiguous blocks; Linked Lists use discrete nodes with pointer overhead.\n• **Access**: Arrays have $O(1)$ constant-time random access by index; Linked Lists require $O(N)$ sequential traversal.\n• **Insertions/Deletions**: Linked Lists achieve $O(1)$ insertion at head/tail (if pointer exists); Arrays need $O(N)$ element shifts.\n• **Cache Locality**: Arrays exhibit high spatial cache locality; Linked Lists scatter in heap memory.`;
+    }
+
+    if (/\b(stack|queue)\b/i.test(msg) && !/attendance/i.test(msg)) {
+      return `**Stack vs Queue:**\n\n• **Stack (LIFO — Last In First Out)**: Push, Pop, Peek are all $O(1)$. Applications: function call stacks, undo operations, syntax parsing, DFS.\n• **Queue (FIFO — First In First Out)**: Enqueue, Dequeue, Front are all $O(1)$. Applications: CPU scheduling, printer spools, BFS traversal.`;
+    }
+
+    if (/\b(binary search tree|bst|tree traversal)\b/i.test(msg)) {
+      return `**Binary Search Tree (BST) & Traversals:**\n\n• **BST Invariant**: Left subtree values < Root value < Right subtree values.\n• **Time Complexity**: Average search/insert is $O(\\log N)$; skewed worst case is $O(N)$. Self-balancing trees (AVL / Red-Black) guarantee $O(\\log N)$.\n• **Traversals**:\n  - **In-Order** (Left, Root, Right): Returns keys in sorted ascending order.\n  - **Pre-Order** (Root, Left, Right): Useful for cloning or serializing trees.\n  - **Post-Order** (Left, Right, Root): Ideal for bottom-up node deletion.`;
+    }
+
+    if (/\b(graph|bfs|dfs|dijkstra)\b/i.test(msg)) {
+      return `**Graph Algorithms Summary:**\n\n• **BFS (Breadth-First Search)**: Uses a Queue. Level-order traversal that finds the unweighted shortest path in $O(V + E)$ time.\n• **DFS (Depth-First Search)**: Uses a Stack (or recursion). Explores branches fully before backtracking. Solves cycle detection and topological sorting in $O(V + E)$.\n• **Dijkstra's Algorithm**: Greedy algorithm using a Min-Heap. Computes single-source shortest path for non-negative weights in $O((V + E) \\log V)$.`;
+    }
+
+    if (/\b(sorting|sort algorithm|merge sort|quick sort)\b/i.test(msg)) {
+      return `**Core Sorting Algorithms:**\n\n1. **Merge Sort**: Stable, Divide-and-Conquer, guaranteed $O(N \\log N)$ time, $O(N)$ auxiliary space.\n2. **Quick Sort**: Partition around pivot, average $O(N \\log N)$, worst-case $O(N^2)$ (avoidable with randomized pivots), $O(\\log N)$ recursion stack.\n3. **Heap Sort**: In-place $O(1)$ extra memory, guaranteed $O(N \\log N)$, but not stable.`;
+    }
+
+    if (/\b(big o|time complexity|space complexity)\b/i.test(msg)) {
+      return `**Big-O Notation Hierarchy:**\n\n• $O(1)$ — Constant (direct hash map lookup, array indexing)\n• $O(\\log N)$ — Logarithmic (binary search, divide & conquer halving)\n• $O(N)$ — Linear (single scan over an array of size $N$)\n• $O(N \\log N)$ — Linearithmic (optimal comparison sorting: Merge Sort, Heap Sort)\n• $O(N^2)$ — Quadratic (nested loops: Bubble Sort, Matrix addition)\n• $O(2^N)$ — Exponential (power set generation, naive recursive Fibonacci)\n• $O(N!)$ — Factorial (generating all permutations)`;
+    }
+
+    if (/\b(oop|object oriented|pillars of oop|polymorphism|encapsulation|inheritance|abstraction)\b/i.test(msg)) {
+      return `**The 4 Pillars of OOP:**\n\n1. **Encapsulation**: Bundles data and functions together while restricting direct access to internal state using private/protected modifiers.\n2. **Abstraction**: Exposes clean interfaces while hiding implementation complexity (e.g. interfaces, abstract base classes).\n3. **Inheritance**: Enables class reuse by deriving child classes from parent classes (code reusability).\n4. **Polymorphism**: Allows uniform interfaces for differing underlying forms—via compile-time overloading or runtime overriding.`;
+    }
+
+    if (/\b(sql vs nosql|acid|database|db)\b/i.test(msg) && !/attendance/i.test(msg)) {
+      return `**Database Paradigms:**\n\n• **SQL (Relational)**: Fixed schema, ACID transactions, relational foreign keys (PostgreSQL, MySQL). Best for structured financial or ERP models.\n• **NoSQL**: Schema-flexible, horizontally scalable, BASE consistency (MongoDB, Redis, Cassandra). Best for high-throughput, unstructured feeds.\n• **ACID Guarantees**: Atomicity (all-or-nothing), Consistency (state rules preserved), Isolation (independent concurrent transactions), Durability (persisted on disk).`;
+    }
+
+    // 9. Study Methods & Productivity
+    if (/\b(how to study|study tips|exam prep|preparation tips|concentrate|focus)\b/i.test(msg)) {
+      return `**Top Study & Revision Strategies for ${userName}:**\n\n1. **Active Recall**: Test yourself with practice questions rather than passively re-reading notes.\n2. **Spaced Repetition**: Review material across widening intervals (1 day, 3 days, 1 week) to beat the forgetting curve.\n3. **Feynman Technique**: Explain complex engineering principles as if teaching a beginner. Any point where you hesitate is a concept to re-learn.\n4. **Pomodoro Technique**: 50 minutes of deep study followed by 10 minutes away from screens.`;
+    }
+
     // Default friendly academic response
     if (effectiveLang === 'hi') {
       return `नमस्ते ${userName}! मैं तुम्हारा AI डिजिटल ट्विन हूँ। **${matchedSubject.name}** में तुम्हारी अटेंडेंस **${effPct.toFixed(1)}%** (${att}/${cond}) है, सेफ बंक्स: **${safeBunks}**। बताओ आज क्या प्लान करना है—अटेंडेंस, बंक, या पढ़ाई?`;
@@ -2945,7 +3005,7 @@ export default function Dashboard() {
 
     // If query asks to look/see or if user is in video call and camera is active, grab live video frame
     let frameData: string | null = null;
-    const isVisionQuery = /look|see|face|expression|video|camera|tired|showing|holding|read|board|posture|shirt|room|desk/i.test(userMsg);
+    const isVisionQuery = /\b(look at (?:this|me|my)|see this|what is this|read this|check my posture|how do i look|can you see me|my expression|my shirt|my desk|my board)\b/i.test(userMsg);
     if ((source === 'video' || videoCallOpen || isVisionQuery) && isCameraActive) {
       frameData = captureUserVideoFrame();
     }

@@ -165,10 +165,25 @@ class ChatRequest(BaseModel):
 _recent_responses: list[str] = []
 
 def clean_twin_response(text: str) -> str:
-    """Strip robotic transitions, disclaimers, and generic fluff to keep dialogue authentic and humanlike."""
+    """Strip robotic transitions, disclaimers, reasoning blocks, and generic fluff to keep dialogue authentic and humanlike."""
     if not text:
         return text
     cleaned = text.strip()
+
+    # Strip thinking tags from reasoning models
+    cleaned = re.sub(r"<think>.*?</think>", "", cleaned, flags=re.DOTALL).strip()
+    cleaned = re.sub(r"<thought>.*?</thought>", "", cleaned, flags=re.DOTALL).strip()
+
+    # Strip meta-analysis prefaces if a model leaked its planning
+    meta_prefixes = [
+        r"^the user is asking.*?\n\n+",
+        r"^let me think.*?\n\n+",
+        r"^i need to:.*?\n\n+",
+        r"^so i need to:.*?\n\n+",
+        r"^let me draft:.*?\n\n+"
+    ]
+    for m_pre in meta_prefixes:
+        cleaned = re.sub(m_pre, "", cleaned, flags=re.DOTALL | re.IGNORECASE).strip()
 
     robotic_patterns = [
         r"^(?:as an ai(?: language model)?|as a digital twin(?: assistant)?)[,\s]*",
@@ -861,7 +876,10 @@ def try_call_openrouter(system_prompt: str, user_prompt: str, history: list[Chat
     if not is_provider_available("openrouter"):
         return None
     models_to_try = [
-        "inclusionai/ling-3.1-flash",
+        "meta-llama/llama-3.3-70b-instruct",
+        "deepseek/deepseek-chat",
+        "qwen/qwen-2.5-72b-instruct",
+        "mistralai/mistral-small-24b-instruct-2501",
         "openrouter/auto"
     ]
     sanitized = sanitize_history_for_llm(history)
@@ -876,7 +894,7 @@ def try_call_openrouter(system_prompt: str, user_prompt: str, history: list[Chat
                 "model": model,
                 "messages": messages,
                 "temperature": 0.7,
-                "max_tokens": 1200
+                "max_tokens": 2048
             }
             req = urllib.request.Request(
                 "https://openrouter.ai/api/v1/chat/completions",
@@ -898,8 +916,13 @@ def try_call_openrouter(system_prompt: str, user_prompt: str, history: list[Chat
                     if not reply and msg_obj.get("reasoning"):
                         reply = msg_obj.get("reasoning")
                     if reply:
+                        # Clean any think tags if model emitted them
+                        reply = re.sub(r"<think>.*?</think>", "", reply, flags=re.DOTALL)
+                        reply = re.sub(r"<thought>.*?</thought>", "", reply, flags=re.DOTALL)
+                        reply = reply.strip()
+                    if reply:
                         _CIRCUIT_BREAKER.pop("openrouter", None)
-                        return reply.strip()
+                        return reply
         except urllib.error.HTTPError as e:
             print(f"[OpenRouter {model}] HTTP Error: {e.code}")
             if e.code == 429:
@@ -2305,8 +2328,8 @@ def get_dynamic_local_response(data: ChatRequest) -> str:
     is_eyes_missing_intent = any(k in msg for k in eyes_missing_keywords)
     is_eyes_not_detected = (getattr(data, "eyes_detected", None) is False) or ((getattr(data, "eye_openness", 100) or 0) < 22) or (data.facial_emotion == "Eyes Not Detected")
 
-    # Priority 0: Eyes Not Detected / "Where are you? What are you doing?"
-    if is_eyes_missing_intent or is_eyes_not_detected:
+    # Priority 0: Eyes Inquiry (only if user explicitly asked in video context)
+    if is_eyes_missing_intent and data.context == "video":
         if is_eyes_not_detected or data.has_face is False:
             if lang == "kn":
                 return f"ಹೇ {user_name}, ಎಲ್ಲಿಗೆ ಹೋದೆ ಮಗಾ? ಏನ್ ಮಾಡ್ತಿದ್ದೀಯಾ? ನನಗೆ ನಿನ್ನ ಕಣ್ಣುಗಳು ಕಾಣಿಸ್ತಿಲ್ಲ — ಇಲ್ಲೇ ಇದ್ದೀಯಾ ತಾನೇ?"
@@ -2315,27 +2338,27 @@ def get_dynamic_local_response(data: ChatRequest) -> str:
             elif is_hindi or lang == "hi":
                 return f"अरे {user_name}, कहाँ चले गए भाई? क्या कर रहे हो? मुझे तुम्हारी आँखें नहीं दिख रही हैं — सब ठीक है ना?"
             return f"Hey {user_name}, where are you? What are you doing? I can't see your eyes right now — are you still with me?"
-        elif is_eyes_missing_intent:
+        else:
             if lang == "kn":
                 return f"ನಾನು ಇಲ್ಲೇ ನಿನ್ನ ಸ್ಕ್ರೀನ್ ಮೇಲೆ ಇದ್ದೀನಿ {user_name}! ನಿನ್ನ ಕಣ್ಣುಗಳು ಕಾಣಿಸ್ತಿದೆ, ಫುಲ್ ಫೋಕಸ್ ಆಗಿದ್ದೀಯಾ. ಇವಾಗ ಏನ್ ಮಾಡ್ತಿದ್ದೀಯಾ?"
             elif lang == "te":
-                return f"నేను ఇక్కడే నీ స్క్రీన్ మీదే ఉన్నాను {user_name}! నీ కళ్ళు కనిపిస్తున్నాయి, ఫుల్ ఫోకస్ లో ఉన్నావ్. ఇప్పుడు ఏం చేస్తున్నావ్ బావా?"
+                return f"నేను ఇక్కడే నీ స్క్రీన్ మీదే ఉన్నాను {user_name}! నీ కళ్ళు కనిపిస్తున్నాయి, ఫుಲ್ ఫోకస్ లో ఉన్నావ్. ఇప్పుడు ఏం చేస్తున్నావ్ బావా?"
             elif is_hindi or lang == "hi":
                 return f"मैं तो यहीं तुम्हारी स्क्रीन पर हूँ {user_name}! मुझे तुम्हारी आँखें साफ दिख रही हैं और तुम एकदम फोकस्ड लग रहे हो। बताओ अभी क्या चल रहा है?"
             return f"I'm right here with you on screen, {user_name}! I can see your eyes and you're locked in. What are you working on right now?"
 
-    sad_keywords = ["sad", "udas", "down", "upset", "crying", "depressed", "frown", "unhappy", "dukhi", "rone", "dard", "enquire sad"]
+    sad_keywords = ["why am i sad", "i am sad", "feeling sad", "i feel depressed", "feeling down", "bahut udas", "dard", "enquire sad"]
     is_sad_intent = any(k in msg for k in sad_keywords)
     is_sad_face = (data.facial_emotion in ["Sad / Down", "Stressed / Overwhelmed"]) or ((getattr(data, "stress_score", 0) or 0) >= 25)
 
-    happy_keywords = ["happy", "khush", "smile", "smiling", "joy", "excited", "enquire happy"]
+    happy_keywords = ["why am i happy", "i am happy", "feeling happy", "feeling joyful", "bahut khush", "enquire happy"]
     is_happy_intent = any(k in msg for k in happy_keywords)
     is_happy_face = (data.facial_emotion in ["Joy & Confidence", "Happy & Confident", "Happy"]) or ((getattr(data, "smile_score", 0) or 0) >= 30)
 
-    is_face_query = any(k in msg for k in ["how do i look", "look at my face", "can you see me", "my expression", "how am i looking", "face", "chehra", "look", "happy", "sad", "smiling", "crying"])
+    is_face_query = any(k in msg for k in ["how do i look", "look at my face", "can you see me", "my expression", "how am i looking"])
 
     # Priority 1: Sadness Inquiry / Directive
-    if is_sad_intent or is_sad_face:
+    if is_sad_intent or (is_face_query and is_sad_face):
         if lang == "kn":
             return f"ಹೇ {user_name}... ಇವತ್ತು ಯಾಕೆ ಇಷ್ಟೊಂದು ಬೇಸರದಲ್ಲಿದ್ದೀಯಾ ಮಗಾ? ಏನಾಯ್ತು? ಕ್ಲಾಸ್ ಅಥವಾ ಎಕ್ಸಾಮ್ ಟೆನ್ಷನ್ ಇದ್ಯಾ? ನನ್ನ ಜೊತೆ ಮಾತಾಡು, ನಾನು ನಿನ್ನ ಜೊತೆ ಇದ್ದೀನಿ!"
         elif lang == "te":
@@ -2345,7 +2368,7 @@ def get_dynamic_local_response(data: ChatRequest) -> str:
         return f"Hey {user_name}... why are you feeling sad today? What's going on, buddy? Did something happen with classes or exams? Talk to me — I've got your back!"
 
     # Priority 2: Happiness Inquiry / Directive
-    if is_happy_intent or is_happy_face:
+    if is_happy_intent or (is_face_query and is_happy_face):
         if lang == "kn":
             return f"ಹೇ {user_name}! ಇವತ್ತು ಯಾಕೆ ಇಷ್ಟು ಖುಷಿಯಾಗಿದ್ದೀಯಾ ಮಗಾ? ಮುಖದಲ್ಲಿ ಫುಲ್ ಜೋಶ್ ಕಾಣಿಸ್ತಿದೆ—ಏನಾದ್ರೂ ಗುಡ್ ನ್ಯೂಸ್ ಇದ್ಯಾ? ಹೇಳು! 😄"
         elif lang == "te":
@@ -2354,9 +2377,9 @@ def get_dynamic_local_response(data: ChatRequest) -> str:
             return f"अरे वाह {user_name}! आज इतने खुश क्यों हो भाई? क्या कोई खुशखबरी मिली है या कोई टेस्ट बढ़िया गया? बताओ मुझे भी! 😄"
         return f"Hey {user_name}! Why are you so happy today? What's the good news, buddy? Did you ace a test or just having an awesome day? Tell me everything! 😄"
 
-    # Priority 3: No Face Detected (only if neither sad nor happy intent)
-    if data.has_face is False or data.facial_emotion == "No Face Detected":
-        if is_face_query or any(k in msg for k in ["why", "expression", "camera"]):
+    # Priority 3: No Face Detected (only in video mode when user explicitly asks how they look)
+    if (data.context == "video") and (data.has_face is False or data.facial_emotion == "No Face Detected"):
+        if is_face_query:
             if lang == "kn":
                 return f"ಹೇ {user_name}, ನನಗೆ ಈಗ ನಿನ್ನ ಮುಖ ಕಾಣಿಸ್ತಿಲ್ಲ (ಕ್ಯಾಮೆರಾದಲ್ಲಿ ನೋ ಫೇಸ್)—ಕ್ಯಾಮೆರಾ ಮುಂದೆ ಬಾ ಮಗಾ!"
             elif lang == "te":
@@ -2879,16 +2902,19 @@ def chat_assistant(data: ChatRequest):
             f"   - Step 3: Actionable script to talk to the course coordinator or HOD to explain the situation.\n"
             f"5. End with reassuring solidarity ('We will work through this together. You can handle this.')."
         )
-    # Append real-time facial expression reaction requirement
-    if getattr(data, "eyes_detected", None) is False or (getattr(data, "eye_openness", 100) or 0) < 22 or data.facial_emotion == "Eyes Not Detected":
-        system_prompt += f"\n\n🚨 CRITICAL MANDATE — EYES NOT DETECTED: {user_name}'s eyes are NOT detected on camera right now (eyes closed, looking away, or covered). You MUST explicitly ask them: 'Hey {user_name}, where are you? What are you doing? I can't see your eyes right now — are you still with me?'"
-    elif data.has_face is False or data.facial_emotion == "No Face Detected":
-        system_prompt += f"\n\n🚨 CRITICAL MANDATE — NO FACE DETECTED: The student's face is NOT visible on camera (telemetry: 0%). If they ask how they look or where they are, you MUST explicitly ask: 'Where are you? What are you doing? I can't see your eyes or face right now, {user_name}—step in front of the camera!'"
-    elif data.facial_emotion:
-        if "Sad" in data.facial_emotion or "Down" in data.facial_emotion or (getattr(data, "stress_score", 0) or 0) > 50:
-            system_prompt += f"\n\n🚨 CRITICAL MANDATE — PROACTIVE SADNESS CHECK: {user_name}'s face currently shows {data.facial_emotion} (stress: {(getattr(data, 'stress_score', 0) or 0)}%). In your reply, you MUST proactively address their facial expression and ask: 'Why are you sad?' or 'Amay, why are you feeling down today? What happened? Talk to me—I've got your back!'"
-        elif "Joy" in data.facial_emotion or "Happy" in data.facial_emotion or (getattr(data, "smile_score", 0) or 0) > 40:
-            system_prompt += f"\n\n🚨 CRITICAL MANDATE — PROACTIVE HAPPINESS CHECK: {user_name}'s face currently shows {data.facial_emotion}! In your reply, you MUST proactively address their facial expression and ask: 'Why are you so happy today?' or 'Amay, why are you so happy right now? Did you get good news? Tell me everything! 😄'"
+    # Append real-time facial expression reaction requirement ONLY when in video mode and user asks about appearance
+    is_video_mode = (data.context == "video")
+    is_face_or_eye_query = any(k in data.message.lower() for k in [
+        "how do i look", "look at me", "can you see me", "my expression", 
+        "where are you", "what are you doing", "can you see my eyes", "eyes", "face"
+    ])
+    if is_video_mode and is_face_or_eye_query:
+        if getattr(data, "eyes_detected", None) is False or (getattr(data, "eye_openness", 100) or 0) < 22 or data.facial_emotion == "Eyes Not Detected":
+            system_prompt += f"\n\nObservation: {user_name}'s eyes are not clearly visible on camera right now. If they ask about their appearance, let them know to look at the camera."
+        elif data.has_face is False or data.facial_emotion == "No Face Detected":
+            system_prompt += f"\n\nObservation: {user_name}'s face is not visible on camera right now. If they ask how they look, remind them to step in front of the camera."
+        elif data.facial_emotion:
+            system_prompt += f"\n\nObservation: {user_name}'s facial expression appears {data.facial_emotion}."
 
     # 1. Try OpenRouter API if key is present (configured with inclusionai/ling-3.1-flash for AI Twin)
     if openrouter_key:
