@@ -22,6 +22,7 @@ import {
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
 import CgpaPlannerPortal from "./CgpaPlannerPortal";
+import VitalAiPortal from "./VitalAiPortal";
 
 ChartJS.register(
   CategoryScale,
@@ -567,7 +568,7 @@ const LOGIN_TRANSLATIONS: Record<SupportedLanguage, {
 export default function Dashboard() {
   const [isClient, setIsClient] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [activePage, setActivePage] = useState<'portal' | 'analytics' | 'cgpa'>('portal');
+  const [activePage, setActivePage] = useState<'portal' | 'analytics' | 'cgpa' | 'vital'>('portal');
 
   // Modern Auth State
   const [authTab, setAuthTab] = useState<'email' | 'phone'>('email');
@@ -669,6 +670,7 @@ export default function Dashboard() {
 
   // MediaPipe Face Mesh & Emotion Telemetry States & Refs
   const faceMeshCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const faceLandmarkerRef = useRef<any>(null);
   const faceMeshAnimFrameRef = useRef<number | null>(null);
   const [isFaceMeshActive, setIsFaceMeshActive] = useState(true);
@@ -2326,7 +2328,7 @@ export default function Dashboard() {
 
     // If microphone is OFF, turn it ON: Enable hardware audio tracks
     try {
-      let currentStream = userStream;
+      const currentStream = userStream;
       const hasAudioTracks = currentStream && currentStream.getAudioTracks().length > 0;
 
       if (!hasAudioTracks) {
@@ -3769,6 +3771,23 @@ export default function Dashboard() {
               <i className="fa-solid fa-graduation-cap"></i>
               <span className="nav-tab-label-full">CGPA Trajectory Planner</span>
               <span className="nav-tab-label-short">CGPA Planner</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activePage === 'vital'}
+              className={`nav-tab-btn ${activePage === 'vital' ? 'active' : ''}`}
+              onClick={() => {
+                if (isMandatoryProfileSetup) {
+                  setShowEditProfileModal(true);
+                  return;
+                }
+                setActivePage('vital');
+              }}
+            >
+              <i className="fa-solid fa-heart-pulse"></i>
+              <span className="nav-tab-label-full">VitalAI Health</span>
+              <span className="nav-tab-label-short">VitalAI</span>
             </button>
           </nav>
         )}
@@ -5398,6 +5417,16 @@ export default function Dashboard() {
       {/* FULL-SCALE CYBERPUNK CGPA CALCULATOR & ACADEMIC TRAJECTORY PLANNER PORTAL */}
       {activePage === 'cgpa' && (
         <CgpaPlannerPortal />
+      )}
+
+      {/* VITALAI - BIOMARKERS & STUDENT HEALTH PORTAL */}
+      {activePage === 'vital' && (
+        <VitalAiPortal
+          user={user}
+          facialTelemetry={detectedEmotion}
+          cameraActive={isFaceMeshActive}
+          activeLang={voiceLanguage}
+        />
       )}
 
       {/* UNIFIED DOCKED FLOATING AI COMMAND BAR */}

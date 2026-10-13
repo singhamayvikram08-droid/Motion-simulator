@@ -9,8 +9,14 @@ export default function CookieConsentBanner() {
   const [showPreferences, setShowPreferences] = useState(false);
 
   // Preference switches
-  const [analyticsAllowed, setAnalyticsAllowed] = useState(true);
-  const [telemetryAllowed, setTelemetryAllowed] = useState(true);
+  const [analyticsAllowed, setAnalyticsAllowed] = useState(() => {
+    const existing = getCookieConsent();
+    return existing ? existing.analytics : true;
+  });
+  const [telemetryAllowed, setTelemetryAllowed] = useState(() => {
+    const existing = getCookieConsent();
+    return existing ? existing.telemetry : true;
+  });
 
   useEffect(() => {
     // Check if consent has already been given
@@ -19,9 +25,6 @@ export default function CookieConsentBanner() {
       // Show banner after brief delay for smooth appearance
       const timer = setTimeout(() => setIsOpen(true), 600);
       return () => clearTimeout(timer);
-    } else {
-      setAnalyticsAllowed(existing.analytics);
-      setTelemetryAllowed(existing.telemetry);
     }
 
     // Listen for custom event from footer to re-open consent settings

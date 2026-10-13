@@ -3,6 +3,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import "./language-preference.css";
 import "./cgpa-planner.css";
+import "./vital-ai.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 

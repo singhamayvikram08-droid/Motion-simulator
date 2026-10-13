@@ -48,3 +48,16 @@ services:
         sync: false
       - key: OPENROUTER_API_KEY
         sync: false
+
+  # ----------------------------------------------------------------------------
+  # 3. VitalAI - Smart Health & Biomarkers Dashboard
+  # ----------------------------------------------------------------------------
+  - type: static
+    name: vital-ai-health
+    plan: free
+    region: oregon
+    rootDir: vital-ai
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    autoDeploy: true
+
