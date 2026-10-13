@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>404 - Page Not Found | VitalAI</title>
+    <meta name="description" content="The requested health telemetry page or biomarker route could not be found.">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .error-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .error-card {
+            max-width: 540px;
+            width: 100%;
+            padding: 48px 36px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(139, 92, 246, 0.2));
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            color: #f87171;
+            margin-bottom: 8px;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.25);
+        }
+        .error-code {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            background: linear-gradient(135deg, #f87171, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            line-height: 1;
+        }
+        .error-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+        .error-desc {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            margin: 0 0 16px 0;
+            line-height: 1.6;
+        }
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body class="dark-mode">
+    <div class="animated-bg">
+        <div class="blob"></div>
+    </div>
+
+    <div class="error-container">
+        <div class="card glass-panel error-card">
+            <div class="error-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h1 class="error-code">404</h1>
+            <h2 class="error-title">Biomarker Route Disconnected</h2>
+            <p class="error-desc">
+                The health telemetry coordinate or page resource you were looking for does not exist or has been shifted. Let's return you safely to your health dashboard.
+            </p>
+            <div class="error-actions">
+                <a href="/" class="btn-primary" style="text-decoration: none; padding: 12px 28px; font-size: 0.95rem;">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Return to Dashboard</span>
+                </a>
+                <a href="/privacy.html" class="btn-outline" style="text-decoration: none; padding: 12px 20px; font-size: 0.95rem;">
+                    <span>Privacy Policy</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

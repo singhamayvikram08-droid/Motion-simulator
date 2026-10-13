@@ -3,17 +3,52 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitalAI - Smart Health Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>VitalAI | AI-Powered Smart Health & Biomarkers Dashboard</title>
+    <meta name="description" content="Free precision health companion featuring AI biomarker analysis, clinical BMI & body fat estimation, real-time vitality ratings, and personalized nutrition guidance.">
+    <meta name="keywords" content="VitalAI, BMI Calculator, Body Fat Percentage, Biomarker Analytics, Fitness Score, Health Dashboard, Calorie Tracker, Nutrition Advisor, Health AI">
+    <meta name="author" content="VitalAI Systems">
+    <meta name="theme-color" content="#8b5cf6">
+    <link rel="canonical" href="https://vital-ai.onrender.com/">
+
+    <!-- Favicon & PWA Manifest -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Open Graph (Social Previews) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vital-ai.onrender.com/">
+    <meta property="og:title" content="VitalAI | AI-Powered Smart Health & Biomarkers Dashboard">
+    <meta property="og:description" content="Free precision health companion featuring AI biomarker analysis, clinical BMI & body fat estimation, and personalized nutrition guidance.">
+    <meta property="og:image" content="/og-image.png">
+    <meta property="og:site_name" content="VitalAI">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="VitalAI | AI-Powered Smart Health & Biomarkers Dashboard">
+    <meta name="twitter:description" content="Free precision health companion featuring AI biomarker analysis, clinical BMI & body fat estimation.">
+    <meta name="twitter:image" content="/og-image.png">
+
+    <!-- Resource Preconnects for Optimal Page Speed -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+
+    <!-- Core Chart Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js" defer></script>
 </head>
 
-<body>
+<body class="dark-mode">
     <div class="animated-bg">
         <div class="blob"></div>
     </div>
@@ -22,127 +57,198 @@
     <div id="auth-view" class="view active">
         <div class="auth-glass card glass-panel">
             <div class="brand-center">
-                <i class="fa-solid fa-dna text-gradient" style="font-size: 40px; margin-bottom:16px;"></i>
+                <i class="fa-solid fa-dna text-gradient" style="font-size: 40px; margin-bottom:16px;" aria-hidden="true"></i>
                 <h2>Welcome to <span class="text-gradient">VitalAI</span></h2>
                 <p>Your futuristic health companion</p>
             </div>
 
-            <div class="auth-tabs">
-                <button class="active" id="tab-login">Login</button>
-                <button id="tab-signup">Sign Up</button>
+            <div class="auth-tabs" role="tablist">
+                <button class="active" id="tab-login" role="tab" aria-selected="true">Login</button>
+                <button id="tab-signup" role="tab" aria-selected="false">Sign Up</button>
             </div>
 
-            <form id="auth-form">
+            <form id="auth-form" novalidate>
+                <!-- Anti-Spam Honeypot Field -->
+                <input type="text" name="b_trap" class="vital-trap-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+
                 <div class="input-group" id="name-group" style="display: none;">
-                    <i class="fa-solid fa-user"></i>
-                    <input type="text" id="auth-name" placeholder="Full Name">
+                    <i class="fa-solid fa-user" aria-hidden="true"></i>
+                    <input type="text" id="auth-name" placeholder="Full Name" autocomplete="name">
                 </div>
                 <div class="input-group">
-                    <i class="fa-solid fa-envelope"></i>
-                    <input type="email" id="auth-email" placeholder="Email Address" required>
+                    <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                    <input type="email" id="auth-email" placeholder="Email Address" required autocomplete="email">
                 </div>
                 <div class="input-group">
-                    <i class="fa-solid fa-lock"></i>
-                    <input type="password" id="auth-password" placeholder="Password" required>
+                    <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                    <input type="password" id="auth-password" placeholder="Password" required autocomplete="current-password">
                 </div>
+                <div id="auth-error-msg" class="field-error-msg" style="text-align: center; margin-bottom: 12px;"></div>
                 <button type="submit" class="btn-primary w-100" id="auth-btn">Access Dashboard</button>
             </form>
+
+            <div style="margin-top: 18px; text-align: center; font-size: 0.8rem; color: #cbd5e1;">
+                <span>By continuing, you accept our </span>
+                <a href="/terms.html" style="color: #38bdf8;">Terms</a> &amp;
+                <a href="/privacy.html" style="color: #38bdf8;">Privacy Policy</a>.
+            </div>
         </div>
     </div>
 
     <!-- APP VIEW -->
     <div id="app-view" class="view">
         <div class="dashboard-layout">
-            <aside class="sidebar glass-panel">
+            <aside class="sidebar glass-panel" id="sidebar-drawer">
                 <div class="brand">
-                    <i class="fa-solid fa-dna text-gradient"></i>
+                    <i class="fa-solid fa-dna text-gradient" aria-hidden="true"></i>
                     <span class="brand-name">VitalAI</span>
                 </div>
                 <div class="user-greeting">
-                    <img src="https://ui-avatars.com/api/?name=User&background=random" id="user-avatar" alt="Avatar">
+                    <img src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff" id="user-avatar" alt="User profile avatar image" width="48" height="48" loading="lazy">
                     <div>
                         <p class="greeting">Hello,</p>
                         <h4 id="user-name-display">User</h4>
                     </div>
                 </div>
-                <nav class="nav-menu">
-                    <a href="#" class="active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
-                    <a href="#" id="reset-history"><i class="fa-solid fa-clock-rotate-left"></i> Reset History</a>
-                    <a href="#" id="logout-btn" style="margin-top:auto;"><i class="fa-solid fa-right-from-bracket"></i>
-                        Logout</a>
+                <nav class="nav-menu" aria-label="Main Navigation">
+                    <a href="#dashboard" class="active" id="nav-dashboard-link">
+                        <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/privacy.html">
+                        <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                        <span>Privacy Policy</span>
+                    </a>
+                    <a href="/terms.html">
+                        <i class="fa-solid fa-file-contract" aria-hidden="true"></i>
+                        <span>Terms & Conditions</span>
+                    </a>
+                    <a href="#reset" id="reset-history">
+                        <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                        <span>Reset History</span>
+                    </a>
+                    <a href="#logout" id="logout-btn" style="margin-top:auto;">
+                        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                        <span>Logout</span>
+                    </a>
                 </nav>
             </aside>
 
             <main class="main-content">
                 <header class="top-header">
-                    <div>
-                        <h1>AI Health Dashboard</h1>
-                        <p>Analyze and optimize your body metrics.</p>
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <button class="mobile-nav-toggle" id="mobile-toggle-btn" aria-label="Toggle navigation menu">
+                            <i class="fa-solid fa-bars" aria-hidden="true"></i>
+                        </button>
+                        <div>
+                            <h1>AI Health Dashboard</h1>
+                            <p>Analyze and optimize your physiological biomarkers.</p>
+                        </div>
                     </div>
                     <div class="header-actions">
-                        <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
+                        <button id="theme-toggle" class="icon-btn" aria-label="Toggle dark and light mode">
+                            <i class="fa-solid fa-moon" aria-hidden="true"></i>
+                        </button>
                     </div>
                 </header>
 
-                <div class="dashboard-grid">
-                    <div class="card glass-panel span-col">
-                        <h3><i class="fa-solid fa-calculator"></i> Smart BMI Calculator</h3>
+                <!-- One Clear Hero Call to Action (CTA) Banner -->
+                <section class="hero-cta-banner">
+                    <div class="hero-cta-content">
+                        <span class="cta-pill"><i class="fa-solid fa-bolt" aria-hidden="true"></i> Precision Health Intelligence</span>
+                        <h2>Instant Clinical Biomarker Assessment</h2>
+                        <p>Calculate your BMI, Deurenberg body fat percentage, and generate custom AI nutrition plans in seconds.</p>
+                    </div>
+                    <a href="#bmi-form-card" class="cta-action-btn" id="hero-cta-btn">
+                        <i class="fa-solid fa-calculator" aria-hidden="true"></i>
+                        <span>Start Assessment</span>
+                    </a>
+                </section>
 
-                        <div class="unit-toggle">
-                            <button class="toggle-btn active" data-unit="metric">Metric (kg/cm)</button>
-                            <button class="toggle-btn" data-unit="imperial">Imperial (lb/ft+in)</button>
+                <div class="dashboard-grid">
+                    <!-- Calculator Card -->
+                    <div class="card glass-panel span-col" id="bmi-form-card">
+                        <h3><i class="fa-solid fa-calculator" aria-hidden="true"></i> Smart Biomarker Calculator</h3>
+
+                        <div class="unit-toggle" role="group" aria-label="Unit Selection">
+                            <button class="toggle-btn active" data-unit="metric" type="button">Metric (kg/cm)</button>
+                            <button class="toggle-btn" data-unit="imperial" type="button">Imperial (lb/ft+in)</button>
                         </div>
 
-                        <form id="bmi-form" class="bmi-form">
+                        <form id="bmi-form" class="bmi-form" novalidate>
+                            <!-- Anti-Spam Honeypot Field -->
+                            <input type="text" name="b_trap" class="vital-trap-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+
                             <div class="form-grid">
+                                <!-- Weight -->
                                 <div class="input-wrapper">
-                                    <label>Weight</label>
-                                    <div class="input-box">
-                                        <input type="number" id="weight" step="0.1" required>
+                                    <label for="weight">Weight</label>
+                                    <div class="input-box" id="weight-box">
+                                        <input type="number" id="weight" step="0.1" min="20" max="350" required placeholder="68">
                                         <span id="weight-unit">kg</span>
                                     </div>
+                                    <span class="field-error-msg" id="weight-error">Valid weight required (20-350 kg)</span>
                                 </div>
+
+                                <!-- Metric Height -->
                                 <div class="input-wrapper metric-height">
-                                    <label>Height</label>
-                                    <div class="input-box">
-                                        <input type="number" id="height-cm" step="0.1">
+                                    <label for="height-cm">Height</label>
+                                    <div class="input-box" id="height-box">
+                                        <input type="number" id="height-cm" step="0.5" min="80" max="260" placeholder="175">
                                         <span>cm</span>
                                     </div>
+                                    <span class="field-error-msg" id="height-error">Valid height required (80-260 cm)</span>
                                 </div>
+
+                                <!-- Imperial Height -->
                                 <div class="input-wrapper imperial-height" style="display: none;">
-                                    <label>Height (ft/in)</label>
-                                    <div class="multi-input">
-                                        <input type="number" id="height-ft" placeholder="ft">
-                                        <input type="number" id="height-in" placeholder="in">
+                                    <label for="height-ft">Height (ft / in)</label>
+                                    <div class="multi-input" id="imperial-box">
+                                        <input type="number" id="height-ft" min="3" max="8" placeholder="5">
+                                        <input type="number" id="height-in" min="0" max="11" placeholder="9">
                                     </div>
+                                    <span class="field-error-msg" id="imperial-error">Valid feet (3-8) and inches (0-11) required</span>
                                 </div>
+
+                                <!-- Age -->
                                 <div class="input-wrapper">
-                                    <label>Age</label>
-                                    <div class="input-box">
-                                        <input type="number" id="age" value="25" required>
+                                    <label for="age">Age</label>
+                                    <div class="input-box" id="age-box">
+                                        <input type="number" id="age" value="25" min="12" max="120" required>
                                     </div>
+                                    <span class="field-error-msg" id="age-error">Valid age required (12-120 years)</span>
                                 </div>
+
+                                <!-- Gender -->
                                 <div class="input-wrapper">
-                                    <label>Gender</label>
+                                    <label>Biological Gender</label>
                                     <div class="gender-selection">
-                                        <label><input type="radio" name="gender" value="male" checked>
-                                            <span>Male</span></label>
-                                        <label><input type="radio" name="gender" value="female">
-                                            <span>Female</span></label>
+                                        <label>
+                                            <input type="radio" name="gender" value="male" checked>
+                                            <span>Male</span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="gender" value="female">
+                                            <span>Female</span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
+
                             <div class="form-actions">
-                                <button type="button" class="btn-voice" id="voice-btn" title="Voice Input">
-                                    <i class="fa-solid fa-microphone"></i>
+                                <button type="button" class="btn-voice" id="voice-btn" title="Voice Input (Speech Dictation)" aria-label="Dictate weight and height with voice">
+                                    <i class="fa-solid fa-microphone" aria-hidden="true"></i>
                                 </button>
-                                <button type="reset" id="form-reset-btn" class="btn-outline">Reset</button>
-                                <button type="submit" class="btn-primary" style="flex:1;">Calculate AI metrics</button>
+                                <button type="reset" id="form-reset-btn" class="btn-outline">Reset Form</button>
+                                <button type="submit" class="btn-primary" style="flex:1;">
+                                    <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                                    <span>Calculate AI Metrics</span>
+                                </button>
                             </div>
                         </form>
                     </div>
 
-                    <!-- New Metrics Section -->
+                    <!-- Metrics Overview Strip -->
                     <div class="metrics-grid span-col">
                         <div class="card glass-panel metric-box">
                             <h4>Body Fat Est.</h4>
@@ -153,11 +259,12 @@
                                 </div>
                             </div>
                         </div>
+
                         <div class="card glass-panel metric-box">
-                            <h4>Fitness Score</h4>
+                            <h4>Vitality Score</h4>
                             <div class="metric-value fitness-v">
                                 <div class="score-circle">
-                                    <svg viewBox="0 0 36 36" class="circular-chart">
+                                    <svg viewBox="0 0 36 36" class="circular-chart" aria-label="Vitality score ring">
                                         <path class="circle-bg"
                                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                                         <path id="score-fill" class="circle" stroke-dasharray="0, 100"
@@ -167,26 +274,27 @@
                                 </div>
                             </div>
                         </div>
+
                         <div class="card glass-panel metric-box">
                             <h4>Health Tip</h4>
                             <p id="daily-tip" class="small-text">Calculating optimal advice...</p>
                         </div>
                     </div>
 
-                    <div id="ai-loading" class="card glass-panel hidden span-col"
-                        style="padding:60px; text-align:center;">
-                        <i class="fa-solid fa-microchip fa-spin text-gradient"
-                            style="font-size: 50px; margin-bottom:20px;"></i>
+                    <!-- Loading State -->
+                    <div id="ai-loading" class="card glass-panel hidden span-col" style="padding:60px; text-align:center;">
+                        <i class="fa-solid fa-microchip fa-spin text-gradient" style="font-size: 50px; margin-bottom:20px;" aria-hidden="true"></i>
                         <h3 class="mt-3">Analyzing Biomarkers...</h3>
-                        <p style="color:var(--text-sec)">Processing health data via predictive algorithms.</p>
+                        <p style="color:var(--text-sec)">Processing health telemetry via clinical predictive models.</p>
                     </div>
 
+                    <!-- Results Section -->
                     <div id="results-view" class="dashboard-grid full-width hidden">
                         <div class="card glass-panel result-card" style="display:flex; flex-direction:column;">
-                            <h3><i class="fa-solid fa-gauge"></i> BMI Meter</h3>
+                            <h3><i class="fa-solid fa-gauge" aria-hidden="true"></i> BMI Meter</h3>
                             <div class="gauge-container">
                                 <div class="circular-gauge">
-                                    <svg viewBox="0 0 100 50" class="gauge-svg">
+                                    <svg viewBox="0 0 100 50" class="gauge-svg" aria-label="BMI Gauge Arc">
                                         <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" />
                                         <path class="gauge-fill" id="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50"
                                             stroke-dasharray="125.6" stroke-dashoffset="125.6" fill="none" />
@@ -203,70 +311,97 @@
                             <div class="linear-range">
                                 <div class="range-marker" id="linear-marker"></div>
                                 <div class="range-labels">
-                                    <span>15</span><span>18.5</span><span>25</span><span>30</span><span>40</span>
+                                    <span>15 (Under)</span><span>18.5 (Normal)</span><span>25 (Over)</span><span>30 (Obese)</span><span>40</span>
                                 </div>
                             </div>
+
                             <!-- AI Advisor Card -->
-                            <div class="card glass-panel ai-advisor span-col">
-                                <h3><i class="fa-solid fa-microchip"></i> AI Personalized Health Plan</h3>
+                            <div class="card glass-panel ai-advisor span-col" style="margin-top: 24px;">
+                                <h3><i class="fa-solid fa-brain text-gradient" aria-hidden="true"></i> AI Personalized Health Plan</h3>
 
                                 <div class="advisor-block highlight">
-                                    <h4><i class="fa-solid fa-fire text-gradient"></i> Target Daily Intake</h4>
+                                    <h4><i class="fa-solid fa-fire text-gradient" aria-hidden="true"></i> Target Daily Calorie Expenditure</h4>
                                     <h2 id="ai-calories">-- kcal</h2>
                                 </div>
 
                                 <div class="llm-output-container">
                                     <div id="ai-response-text" class="streaming-text">
-                                        <p class="placeholder-text">Enter your details and click calculate to generate a
-                                            personalized AI health plan powered by OpenRouter.</p>
+                                        <p class="placeholder-text">Enter your parameters and click calculate to generate a personalized health plan.</p>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- History Chart -->
-                            <div class="card glass-panel chart-panel span-col">
-                                <h3><i class="fa-solid fa-chart-line"></i> Analytics History</h3>
+                            <div class="card glass-panel chart-panel span-col" style="margin-top: 24px;">
+                                <h3><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Analytics Progression History</h3>
                                 <div class="chart-wrapper">
-                                    <canvas id="historyChart"></canvas>
+                                    <canvas id="historyChart" aria-label="Biomarker progression chart"></canvas>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Production Footer with Required Legal Links -->
+                <footer class="platform-footer">
+                    <div>
+                        <span>&copy; 2026 VitalAI Platform. All rights reserved.</span>
+                    </div>
+                    <div class="footer-links">
+                        <a href="/privacy.html">Privacy Policy</a>
+                        <a href="/terms.html">Terms &amp; Conditions</a>
+                        <a href="/sitemap.xml" target="_blank" rel="noopener">Sitemap</a>
+                        <a href="#cookie-settings" id="open-cookie-banner-btn">Cookie Settings</a>
+                    </div>
+                </footer>
             </main>
         </div>
     </div>
 
-    <!-- AI Chatbot Floating Button -->
-    <button id="chatbot-trigger" class="chatbot-fab">
-        <i class="fa-solid fa-comment-dots"></i>
+    <!-- AI Chatbot Floating Action Button -->
+    <button id="chatbot-trigger" class="chatbot-fab" aria-label="Open AI Health Assistant">
+        <i class="fa-solid fa-comment-dots" aria-hidden="true"></i>
         <span class="pulse-ring"></span>
     </button>
 
     <!-- Chatbot Window -->
-    <div id="chatbot-window" class="chatbot-glass glass-panel hidden">
+    <div id="chatbot-window" class="chatbot-glass glass-panel hidden" role="dialog" aria-label="AI Health Assistant">
         <div class="chat-header">
             <div class="chat-title">
-                <i class="fa-solid fa-robot text-gradient"></i>
+                <i class="fa-solid fa-robot text-gradient" aria-hidden="true"></i>
                 <div>
                     <h4>VitalAI Assistant</h4>
                     <span class="status-online">Online</span>
                 </div>
             </div>
-            <button id="close-chat" class="close-btn">&times;</button>
+            <button id="close-chat" class="close-btn" aria-label="Close chat window">&times;</button>
         </div>
-        <div id="chat-messages" class="chat-body">
+        <div id="chat-messages" class="chat-body" tabindex="0">
             <div class="message ai">
-                <p>Hello! I am your AI Health Assistant. How can I help you with your fitness journey today?</p>
+                <p>Hello! I am your VitalAI Health Companion. Ask me about diet plans, workouts, or your calculated biomarker results!</p>
             </div>
         </div>
         <div class="chat-footer">
-            <input type="text" id="chat-input" placeholder="Ask about diet, exercise...">
-            <button id="send-chat"><i class="fa-solid fa-paper-plane"></i></button>
+            <input type="text" id="chat-input" placeholder="Ask about diet, workout routines...">
+            <button id="send-chat" aria-label="Send message"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
         </div>
     </div>
 
+    <!-- Cookie Consent Banner -->
+    <aside id="cookie-consent-banner" class="cookie-banner hidden" role="region" aria-label="Cookie and telemetry consent banner">
+        <div class="cookie-banner-content">
+            <h4><i class="fa-solid fa-cookie-bite text-gradient" aria-hidden="true"></i> Privacy &amp; Data Transparency</h4>
+            <p>
+                We use browser <code>localStorage</code> strictly for your biometric history and preference persistence. No commercial tracking cookies or third-party ad brokers are used. Learn more in our <a href="/privacy.html">Privacy Policy</a>.
+            </p>
+        </div>
+        <div class="cookie-banner-actions">
+            <button type="button" id="cookie-decline-btn" class="cookie-btn-decline">Essential Only</button>
+            <button type="button" id="cookie-accept-btn" class="cookie-btn-accept">Accept All</button>
+        </div>
+    </aside>
 
-
+    <!-- Main Module Script -->
     <script type="module" src="script.js"></script>
 </body>
 

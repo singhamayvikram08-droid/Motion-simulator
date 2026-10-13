@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>Privacy Policy | VitalAI Smart Health Platform</title>
+    <meta name="description" content="Official Privacy Policy for VitalAI. Learn about our local-first architecture, transparent biomarker handling, and zero-tracking commitment.">
+    <link rel="canonical" href="https://vital-ai.onrender.com/privacy.html">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    
+    <!-- Open Graph & Twitter Meta -->
+    <meta property="og:title" content="Privacy Policy | VitalAI Smart Health Platform">
+    <meta property="og:description" content="Local-first biomarker computation and transparent privacy commitments.">
+    <meta property="og:image" content="/og-image.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .legal-container {
+            max-width: 900px;
+            margin: 40px auto 80px auto;
+            padding: 0 20px;
+        }
+        .legal-card {
+            padding: 40px;
+            line-height: 1.75;
+            color: #cbd5e1;
+        }
+        .legal-card h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+        .legal-card h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 8px;
+        }
+        .legal-card p, .legal-card li {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            margin-bottom: 16px;
+        }
+        .legal-card ul {
+            padding-left: 24px;
+            margin-bottom: 20px;
+        }
+        .legal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #c4b5fd;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .back-nav {
+            margin-bottom: 24px;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #38bdf8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .back-btn:hover {
+            transform: translateX(-4px);
+            color: #ffffff;
+        }
+    </style>
+</head>
+
+<body class="dark-mode">
+    <div class="animated-bg">
+        <div class="blob"></div>
+    </div>
+
+    <div class="legal-container">
+        <div class="back-nav">
+            <a href="/" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Return to VitalAI Dashboard</span>
+            </a>
+        </div>
+
+        <article class="card glass-panel legal-card">
+            <div class="legal-badge">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Privacy & Data Sovereignty Policy</span>
+            </div>
+            <h1>VitalAI Privacy Policy</h1>
+            <p><strong>Effective Date:</strong> October 13, 2026 &nbsp;|&nbsp; <strong>Version:</strong> 2.4.0</p>
+
+            <h2><i class="fa-solid fa-microchip text-gradient"></i> 1. Local-First Architecture</h2>
+            <p>
+                VitalAI is engineered around a strict local-first paradigm. All core mathematical evaluations—including Body Mass Index (BMI), clinical body fat estimation (Deurenberg clinical formula), basal metabolic calculations (Mifflin-St Jeor), and fitness vitality index scores—are computed <strong>directly on your client device</strong>.
+            </p>
+            <p>
+                Your biological parameters (height, weight, age, and biological gender) are never uploaded to any centralized advertising database or shared with data brokers.
+            </p>
+
+            <h2><i class="fa-solid fa-database text-gradient"></i> 2. Local Storage & Client Persistence</h2>
+            <p>
+                To provide tracking charts across visits without requiring invasive backend accounts, VitalAI uses browser <code>localStorage</code> to store:
+            </p>
+            <ul>
+                <li>User display name and authenticated email (demo simulation session)</li>
+                <li>Biometric calculation history (date, BMI score, vitality rating)</li>
+                <li>Theme preferences (dark/light mode) and measurement unit toggles (metric/imperial)</li>
+                <li>Optional user-provided OpenRouter API access credentials</li>
+            </ul>
+            <p>
+                You retain complete sovereignty over this data. Clicking <strong>Reset History</strong> or clearing your browser cookies permanently purges all stored metrics instantly.
+            </p>
+
+            <h2><i class="fa-solid fa-brain text-gradient"></i> 3. Ephemeral AI Consultations</h2>
+            <p>
+                When you request a personalized AI nutrition or fitness plan, requests are sent securely to OpenRouter or authorized model backends. Transmitted prompts contain only the anonymous parameters needed for wellness generation (age, gender, BMI range, and calorie targets). These requests are processed ephemerally and are never retained for machine learning model training.
+            </p>
+
+            <h2><i class="fa-solid fa-cookie-bite text-gradient"></i> 4. Zero Commercial Tracking Cookies</h2>
+            <p>
+                VitalAI does not deploy cross-site tracking cookies, behavioral tracking pixels, or third-party advertising trackers. We employ privacy-first, aggregate metrics solely to monitor platform health, uptime, and UI error rates.
+            </p>
+
+            <h2><i class="fa-solid fa-lock text-gradient"></i> 5. Transport Security & HTTPS</h2>
+            <p>
+                All traffic is strictly encrypted in transit using Transport Layer Security (TLS 1.3 / HTTPS). Insecure connections are systematically upgraded via Content Security Policies.
+            </p>
+
+            <h2><i class="fa-solid fa-user-shield text-gradient"></i> 6. Your Rights (GDPR & CCPA)</h2>
+            <p>
+                Under global privacy frameworks including GDPR and CCPA, you have the right to access, rectify, export, and delete your data at any time. Because your data resides within your browser client, you may exercise complete deletion instantly using the in-app controls or by purging browser site data.
+            </p>
+
+            <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <span style="font-size: 0.85rem; color: #64748b;">&copy; 2026 VitalAI Platform. Built for student & personal physical optimization.</span>
+                <a href="/" class="btn-primary" style="padding: 8px 20px; font-size: 0.88rem; text-decoration: none;">Launch Dashboard</a>
+            </div>
+        </article>
+    </div>
+</body>
+</html>
