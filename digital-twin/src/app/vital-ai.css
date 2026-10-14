@@ -33,12 +33,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(6, 10, 20, 0.96));
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: linear-gradient(135deg, rgba(26, 12, 48, 0.92), rgba(12, 5, 24, 0.96));
+  border: 1px solid rgba(168, 85, 247, 0.3);
   border-radius: 18px;
   padding: 1.5rem 1.75rem;
   backdrop-filter: blur(20px);
-  box-shadow: 0 14px 36px -10px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 16px 40px -10px rgba(5, 1, 10, 0.95), 0 0 25px rgba(168, 85, 247, 0.15);
 }
 
 .vital-hero-title-area {
@@ -51,13 +51,13 @@
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  background: linear-gradient(135deg, #a855f7, #6d28d9);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.6rem;
   color: #ffffff;
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.5);
   flex-shrink: 0;
 }
 
@@ -72,7 +72,7 @@
 }
 
 .vital-hero-title-area p {
-  color: var(--text-sec, #94a3b8);
+  color: var(--text-sec, #d8b4fe);
   font-size: 0.88rem;
   margin: 0;
   max-width: 650px;
@@ -93,9 +93,9 @@
   border-radius: 9999px;
   font-size: 0.78rem;
   font-weight: 600;
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.35);
-  color: #c4b5fd;
+  background: rgba(168, 85, 247, 0.18);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #e9d5ff;
 }
 
 .vital-live-dot {
@@ -113,9 +113,9 @@
 }
 
 .vital-btn-standalone {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(139, 92, 246, 0.2));
-  border: 1px solid rgba(6, 182, 212, 0.4);
-  color: #38bdf8;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(124, 58, 237, 0.2));
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #d8b4fe;
   font-size: 0.82rem;
   font-weight: 700;
   padding: 0.55rem 1.1rem;
@@ -129,9 +129,10 @@
 }
 
 .vital-btn-standalone:hover {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.35), rgba(139, 92, 246, 0.35));
-  border-color: #38bdf8;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(124, 58, 237, 0.35));
+  border-color: #a855f7;
   color: #ffffff;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
   transform: translateY(-1px);
 }
 
@@ -142,8 +143,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  background: rgba(8, 12, 22, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(14, 7, 28, 0.88);
+  border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 16px;
   padding: 1rem 1.5rem;
   backdrop-filter: blur(14px);
@@ -203,21 +204,27 @@
 
 /* Glass Card */
 .vital-card {
-  background: #09090b;
-  border: 1px solid #1f1f23;
+  background: rgba(18, 9, 33, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.22);
   border-radius: 18px;
   padding: 1.5rem;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95);
+  box-shadow: 0 20px 50px rgba(5, 1, 10, 0.95);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.vital-card:hover {
+  border-color: rgba(168, 85, 247, 0.45);
+  box-shadow: 0 20px 50px rgba(5, 1, 10, 0.95), 0 0 20px rgba(168, 85, 247, 0.2);
 }
 
 .vital-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #18181b;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.18);
   padding-bottom: 0.85rem;
 }
 
@@ -234,16 +241,16 @@
 /* Unit Toggle */
 .vital-unit-toggle {
   display: inline-flex;
-  background: #000000;
+  background: rgba(8, 3, 16, 0.85);
   padding: 3px;
   border-radius: 10px;
-  border: 1px solid #1f1f23;
+  border: 1px solid rgba(168, 85, 247, 0.2);
 }
 
 .vital-unit-btn {
   background: transparent;
   border: none;
-  color: #71717a;
+  color: #c4b5fd;
   font-size: 0.78rem;
   font-weight: 600;
   padding: 0.35rem 0.8rem;
@@ -253,9 +260,9 @@
 }
 
 .vital-unit-btn.active {
-  background: #18181b;
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
 }
 
 /* Form Controls */
@@ -280,7 +287,7 @@
 .vital-form-group label {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #a1a1aa;
+  color: #d8b4fe;
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -295,8 +302,8 @@
 .vital-input-wrapper input,
 .vital-input-wrapper select {
   width: 100%;
-  background: #000000;
-  border: 1px solid #27272a;
+  background: rgba(10, 4, 20, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.22);
   border-radius: 12px;
   padding: 0.7rem 0.9rem;
   color: #ffffff;
@@ -308,8 +315,8 @@
 
 .vital-input-wrapper input:focus,
 .vital-input-wrapper select:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.3), 0 0 12px rgba(168, 85, 247, 0.2);
 }
 
 .vital-unit-tag {
@@ -317,7 +324,7 @@
   right: 0.9rem;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #71717a;
+  color: #c4b5fd;
   pointer-events: none;
 }
 
@@ -335,9 +342,9 @@
   gap: 0.45rem;
   padding: 0.65rem;
   border-radius: 12px;
-  background: #000000;
-  border: 1px solid #1f1f23;
-  color: #71717a;
+  background: rgba(10, 4, 20, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  color: #d8b4fe;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -345,10 +352,10 @@
 }
 
 .vital-gender-label.active {
-  background: #18181b;
-  border-color: #4f46e5;
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  border-color: #a855f7;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.4);
 }
 
 .vital-gender-label input {
@@ -367,9 +374,9 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--text-sec, #94a3b8);
+  background: rgba(14, 7, 28, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  color: var(--text-sec, #d8b4fe);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -380,8 +387,8 @@
 }
 
 .vital-mic-btn:hover {
-  background: rgba(139, 92, 246, 0.15);
-  border-color: #8b5cf6;
+  background: rgba(168, 85, 247, 0.2);
+  border-color: #a855f7;
   color: #ffffff;
 }
 
@@ -394,7 +401,7 @@
 
 .vital-btn-calculate {
   flex: 1;
-  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  background: linear-gradient(135deg, #a855f7, #6d28d9);
   border: none;
   color: #ffffff;
   font-size: 0.92rem;
@@ -407,19 +414,19 @@
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
 }
 
 .vital-btn-calculate:hover {
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  background: linear-gradient(135deg, #9333ea, #581c87);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45);
+  box-shadow: 0 6px 22px rgba(168, 85, 247, 0.6);
 }
 
 .vital-btn-reset {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-sec, #94a3b8);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: var(--text-sec, #d8b4fe);
   font-size: 0.85rem;
   font-weight: 600;
   padding: 0.75rem 1rem;
@@ -429,7 +436,8 @@
 }
 
 .vital-btn-reset:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(168, 85, 247, 0.15);
+  border-color: #a855f7;
   color: #ffffff;
 }
 
@@ -448,8 +456,8 @@
 }
 
 .vital-metric-card {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(18, 9, 33, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 16px;
   padding: 1.25rem;
   backdrop-filter: blur(12px);
@@ -468,7 +476,7 @@
 .vital-metric-card-header h4 {
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--text-sec, #94a3b8);
+  color: var(--text-sec, #d8b4fe);
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -485,14 +493,14 @@
   width: 100%;
   height: 6px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(26, 12, 48, 0.8);
   overflow: hidden;
 }
 
 .vital-progress-fill {
   height: 100%;
   border-radius: 9999px;
-  background: linear-gradient(90deg, #38bdf8, #8b5cf6);
+  background: linear-gradient(90deg, #7c3aed, #a855f7);
   transition: width 1s ease-in-out;
 }
 
@@ -511,7 +519,7 @@
 
 .vital-circle-bg {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.08);
+  stroke: rgba(45, 20, 80, 0.6);
   stroke-width: 3.8;
 }
 
@@ -566,7 +574,7 @@
 .vital-gauge-center-text p {
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--text-sec, #94a3b8);
+  color: var(--text-sec, #d8b4fe);
   margin: 0;
   text-transform: uppercase;
 }
@@ -608,28 +616,29 @@
   justify-content: space-between;
   font-size: 0.72rem;
   font-weight: 700;
-  color: var(--text-sec, #64748b);
+  color: var(--text-sec, #c4b5fd);
   margin-top: 0.45rem;
 }
 
 /* AI Personalized Health Advisor Box */
 .vital-advisor-card {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(15, 23, 42, 0.8));
-  border: 1px solid rgba(139, 92, 246, 0.25);
+  background: linear-gradient(135deg, rgba(26, 12, 48, 0.9), rgba(14, 6, 26, 0.95));
+  border: 1px solid rgba(168, 85, 247, 0.3);
   border-radius: 18px;
   padding: 1.5rem;
   backdrop-filter: blur(14px);
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  box-shadow: 0 16px 40px -10px rgba(5, 1, 10, 0.95), 0 0 20px rgba(168, 85, 247, 0.15);
 }
 
 .vital-calories-strip {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 4, 20, 0.7);
+  border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 14px;
   padding: 0.85rem 1.25rem;
 }
@@ -640,7 +649,7 @@
   gap: 0.6rem;
   font-size: 0.88rem;
   font-weight: 600;
-  color: var(--text-sec, #94a3b8);
+  color: var(--text-sec, #d8b4fe);
 }
 
 .vital-calories-strip-val {
@@ -650,8 +659,8 @@
 }
 
 .vital-advisor-content {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(10, 4, 20, 0.6);
+  border: 1px solid rgba(168, 85, 247, 0.18);
   border-radius: 14px;
   padding: 1.15rem;
   font-size: 0.9rem;
@@ -679,8 +688,8 @@
 
 /* History Chart */
 .vital-chart-card {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(18, 9, 33, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 18px;
   padding: 1.5rem;
   backdrop-filter: blur(14px);
