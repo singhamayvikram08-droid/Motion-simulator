@@ -1661,37 +1661,82 @@ body.dark-mode .message.ai {
 
 /* Platform Footer */
 .platform-footer {
-    margin-top: 48px;
-    padding: 24px 0 16px 0;
+    margin-top: 56px;
+    padding: 24px 28px;
     border-top: 1px solid var(--border);
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 20px;
     font-size: 0.85rem;
+    color: var(--text-sec);
+    box-shadow: var(--shadow-glass);
+}
+
+.footer-brand-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.footer-brand-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+}
+
+.footer-badge {
+    background: rgba(168, 85, 247, 0.14);
+    border: 1px solid rgba(168, 85, 247, 0.28);
+    color: var(--primary);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.footer-copy {
+    font-size: 0.8rem;
     color: var(--text-sec);
 }
 
 .footer-links {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     align-items: center;
     flex-wrap: wrap;
 }
 
-.footer-links a {
+.footer-links a.footer-link,
+.footer-links button.footer-link-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 500;
     color: var(--text-sec);
     text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-    min-height: 44px;
     display: inline-flex;
     align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    min-height: 40px;
 }
 
-.footer-links a:hover {
+.footer-links a.footer-link:hover,
+.footer-links button.footer-link-btn:hover {
     color: var(--primary);
+    background: rgba(168, 85, 247, 0.1);
+    transform: translateY(-1px);
 }
 
 /* Auth View Theme Toggle */

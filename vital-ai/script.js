@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bmiForm = document.getElementById('bmi-form');
     const formResetBtn = document.getElementById('form-reset-btn');
     const resetHistoryBtn = document.getElementById('reset-history');
+    const footerResetHistoryBtn = document.getElementById('footer-reset-history');
 
     const metricHeight = document.querySelector('.metric-height');
     const imperialHeight = document.querySelector('.imperial-height');
@@ -1055,16 +1056,25 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
         });
     }
 
-    if (resetHistoryBtn) {
-        resetHistoryBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (currentUser && confirm('Clear your entire recorded biomarker history?')) {
+    function handleResetHistory(e) {
+        if (e) e.preventDefault();
+        if (confirm('Clear your entire recorded biomarker history?')) {
+            if (currentUser && users[currentUser.email]) {
                 users[currentUser.email].history = [];
                 localStorage.setItem('users', JSON.stringify(users));
-                renderChart();
-                trackEvent('history_cleared');
             }
-        });
+            localStorage.removeItem('guest_history');
+            renderChart();
+            showToast('Biomarker history has been reset.');
+            trackEvent('history_cleared');
+        }
+    }
+
+    if (resetHistoryBtn) {
+        resetHistoryBtn.addEventListener('click', handleResetHistory);
+    }
+    if (footerResetHistoryBtn) {
+        footerResetHistoryBtn.addEventListener('click', handleResetHistory);
     }
 
     function showResults(bmi, cat, cals, age, gender, h, w, waistCm, ethnicity, actMult, goal) {
