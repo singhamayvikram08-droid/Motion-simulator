@@ -646,9 +646,9 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // LLM Advice with NVIDIA Nemotron-3.5 Lightning
+    // LLM Advice Engine
     async function fetchOpenRouterAdvice(bmi, cat, cals, age, gender, h, w, ffmi, wthr, metabolicAge, pGrams, cGrams, fGrams, ethnicity, goal) {
-        aiResponseText.innerHTML = '<div class="typing-cursor">Synthesizing personalized AI clinical plan via NVIDIA Nemotron-3.5...</div>';
+        aiResponseText.innerHTML = '<div class="typing-cursor">Synthesizing personalized AI clinical plan...</div>';
         aiResponseText.classList.add('shimmer');
 
         const hDisp = unit === 'metric' ? `${(h * 100).toFixed(1)}cm` : `${(h / 0.0254).toFixed(1)}in`;
@@ -659,7 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 messages: [
                     {
                         role: "system",
-                        content: "You are VitalAI's chief clinical nutritionist, exercise physiologist, and metabolic longevity specialist. Provide an evidence-based, highly personalized 2-paragraph diet and conditioning protocol based on the patient's exact biometric measurements. Format cleanly with HTML paragraph <p> tags and <strong> bold highlights."
+                        content: "You are VitalAI's chief clinical nutritionist, exercise physiologist, and metabolic longevity specialist. Provide an evidence-based, highly personalized 2-paragraph diet and conditioning protocol based on the patient's exact biometric measurements. Format cleanly with HTML paragraph <p> tags and <strong> bold highlights. Never mention model or vendor names."
                     },
                     {
                         role: "user",
@@ -682,7 +682,7 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
 
             let reasoningMeta = "";
             if (result.reasoningTokens > 0) {
-                reasoningMeta = `<div class="ai-reasoning-tag"><i class="fa-solid fa-brain" aria-hidden="true"></i> NVIDIA Nemotron-3.5 • ${result.reasoningTokens} reasoning tokens analyzed</div>`;
+                reasoningMeta = `<div class="ai-reasoning-tag"><i class="fa-solid fa-brain" aria-hidden="true"></i> VitalAI Intelligence • ${result.reasoningTokens} reasoning tokens analyzed</div>`;
             }
 
             aiResponseText.innerHTML = (result.text || generateClinicalDeterministicPlan(bmi, cat, cals, age, gender, h, w, ffmi, wthr, metabolicAge, pGrams, cGrams, fGrams)) + reasoningMeta;
@@ -754,7 +754,7 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
         const chatHistory = [
             {
                 role: "system",
-                content: "You are the VitalAI Assistant powered by NVIDIA Nemotron-3.5 Lightning. You specialize in clinical health, fitness protocols, calorie counting, macronutrients, and biomarker analysis. Be encouraging, concise, and scientifically grounded."
+                content: "You are the VitalAI Assistant. You specialize in clinical health, fitness protocols, calorie counting, macronutrients, and biomarker analysis. Be encouraging, concise, and scientifically grounded. Never mention the underlying AI model name."
             }
         ];
 
@@ -794,7 +794,7 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
 
                 let reasoningMeta = "";
                 if (result.reasoningTokens > 0) {
-                    reasoningMeta = `<div class="ai-reasoning-tag"><i class="fa-solid fa-microchip" aria-hidden="true"></i> Nemotron-3.5 • ${result.reasoningTokens} reasoning tokens</div>`;
+                    reasoningMeta = `<div class="ai-reasoning-tag"><i class="fa-solid fa-microchip" aria-hidden="true"></i> VitalAI • ${result.reasoningTokens} reasoning tokens</div>`;
                 }
 
                 aiMsgDiv.innerHTML = (result.text ? (result.text.startsWith('<') ? result.text : `<p>${result.text}</p>`) : "I am here to assist with your health and fitness queries!") + reasoningMeta;
