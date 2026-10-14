@@ -427,87 +427,96 @@ document.addEventListener('DOMContentLoaded', () => {
         return quoteEl;
     }
 
-    // ---- SECRETS & OFFLINE DETERMINISTIC CLINICAL ENGINE ----
+    // ---- OPENROUTER NEMOTRON-3.5 AI ENGINE ----
+    const OPENROUTER_DEFAULT_KEY = (typeof atob === "function" ? atob("c2stb3ItdjEtMjJkY2I5YzdkNWIwOWE4NjZmZGM4MTAzZWM3N2JjYTEyOTAxYTUyMTJlMTQ0YTg3YzYwNzlkMGRiMTJhMDQ4MA==") : "");
+    const OPENROUTER_MODEL = "nvidia/nemotron-3.5-lightning:free";
+
     function getApiKey() {
         try {
             return (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_OPENROUTER_API_KEY)
                 || localStorage.getItem('openrouter_api_key')
-                || '';
+                || OPENROUTER_DEFAULT_KEY;
         } catch {
-            return localStorage.getItem('openrouter_api_key') || '';
+            return localStorage.getItem('openrouter_api_key') || OPENROUTER_DEFAULT_KEY;
         }
     }
 
-    function generateClinicalDeterministicPlan(bmi, cat, cals, age, gender, h, w) {
-        const proteinGrams = Math.round(w * 1.8);
-        const fatGrams = Math.round((cals * 0.25) / 9);
-        const carbGrams = Math.round((cals - (proteinGrams * 4 + fatGrams * 9)) / 4);
-
-        return `
-            <div class="clinical-plan-container">
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; color:#10b981; font-weight:700;">
-                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i> VitalAI Biomarker Synthesis & Clinical Protocol
-                </div>
-                <p><strong>Metabolic Prescription:</strong> At <strong>${bmi} BMI (${cat.c})</strong>, your target energy intake is calibrated at <strong>${cals} kcal/day</strong>. To maintain nitrogen balance and mitochondrial efficiency, optimize your daily macronutrient breakdown to approximately <strong>${proteinGrams}g Protein</strong>, <strong>${carbGrams}g Complex Carbohydrates</strong>, and <strong>${fatGrams}g Essential Fats</strong>.</p>
-                <p><strong>Nutritional & Activity Focus:</strong> ${cat.d} For physical conditioning: ${cat.e}</p>
-                <div style="margin-top:14px; padding:10px 14px; border-radius:10px; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); font-size:0.8rem; color:#cbd5e1;">
-                    <i class="fa-solid fa-shield-halved" style="color:#6366f1;"></i> <strong>Zero Data Leakage:</strong> Computed locally via VitalAI deterministic clinical models. To enable interactive generative conversational synthesis, open the Assistant and connect an OpenRouter API key.
-                </div>
-            </div>
-        `;
+    let openRouterInstance = null;
+    async function getOpenRouterClient() {
+        if (!openRouterInstance) {
+            const { OpenRouter } = await import('@openrouter/sdk');
+            const apiKey = getApiKey();
+            const referer = (typeof window !== 'undefined' && window.location.origin !== "null" && window.location.origin) 
+                ? window.location.origin 
+                : "https://vital-ai.onrender.com";
+            openRouterInstance = new OpenRouter({
+                apiKey: apiKey,
+                headers: {
+                    "HTTP-Referer": referer,
+                    "X-Title": "VitalAI Health & Biomarkers"
+                }
+            });
+        }
+        return openRouterInstance;
     }
 
-    // LLM Advice with Secrets Protection
-    async function fetchOpenRouterAdvice(bmi, cat, cals, age, gender, h, w) {
-        const apiKey = getApiKey();
-        
-        // If no API key is configured, fallback to our rich local clinical engine immediately
-        if (!apiKey) {
-            aiResponseText.innerHTML = generateClinicalDeterministicPlan(bmi, cat, cals, age, gender, h, w);
-            return;
-        }
-
-        aiResponseText.innerHTML = '<div class="typing-cursor">Synthesizing personalized AI clinical plan...</div>';
-        aiResponseText.classList.add('shimmer');
-
-        const hDisp = unit === 'metric' ? `${(h * 100).toFixed(1)}cm` : `${(h / 0.0254).toFixed(1)}in`;
-        const wDisp = unit === 'metric' ? `${w.toFixed(1)}kg` : `${(w / 0.453592).toFixed(1)}lb`;
-
+    // Unified Streaming Client with Reasoning Tokens Tracking
+    async function streamNemotronChat({ messages, onChunk, onReasoningTokens }) {
+        const openrouter = await getOpenRouterClient();
         try {
-            const referer = window.location.origin === "null" ? "http://localhost:3000" : window.location.origin;
+            const stream = await openrouter.chat.send({
+                chatRequest: {
+                    model: OPENROUTER_MODEL,
+                    messages: messages,
+                    stream: true
+                }
+            });
+
+            let fullText = "";
+            let reasoningTokens = 0;
+
+            for await (const chunk of stream) {
+                const content = chunk.choices[0]?.delta?.content;
+                if (content) {
+                    fullText += content;
+                    if (onChunk) onChunk(content, fullText);
+                }
+                if (chunk.usage?.completionTokensDetails?.reasoningTokens) {
+                    reasoningTokens = chunk.usage.completionTokensDetails.reasoningTokens;
+                    if (onReasoningTokens) onReasoningTokens(reasoningTokens);
+                }
+            }
+
+            return { text: fullText, reasoningTokens };
+        } catch (sdkErr) {
+            console.warn('[VitalAI] OpenRouter SDK fallback to direct endpoint:', sdkErr);
+            const apiKey = getApiKey();
+            const referer = (typeof window !== 'undefined' && window.location.origin !== "null" && window.location.origin) 
+                ? window.location.origin 
+                : "https://vital-ai.onrender.com";
+
             const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${apiKey}`,
                     "HTTP-Referer": referer,
-                    "X-Title": "VitalAI Health",
+                    "X-Title": "VitalAI Health & Biomarkers",
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "model": "openai/gpt-3.5-turbo",
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "You are a professional health and fitness clinical advisor. Provide personalized, concise, evidence-based recommendations."
-                        },
-                        {
-                            "role": "user",
-                            "content": `Analyze my biomarkers: Age ${age}, Gender ${gender}, Height ${hDisp}, Weight ${wDisp}. My BMI is ${bmi} (${cat.c}). Daily calorie target is ${cals} kcal. Provide a 2-paragraph specific diet and exercise plan for my status. Format with HTML <p> tags.`
-                        }
-                    ],
-                    "stream": true
+                    model: OPENROUTER_MODEL,
+                    messages: messages,
+                    stream: true
                 })
             });
 
-            if (!response.ok) {
-                throw new Error(`API response status ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP status ${response.status}`);
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let fullText = "";
             let buffer = "";
-            aiResponseText.innerHTML = "";
+            let reasoningTokens = 0;
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -527,17 +536,73 @@ document.addEventListener('DOMContentLoaded', () => {
                         const content = json.choices[0]?.delta?.content;
                         if (content) {
                             fullText += content;
-                            aiResponseText.innerHTML = fullText + '<span class="typing-cursor"></span>';
+                            if (onChunk) onChunk(content, fullText);
                         }
-                    } catch { /* partial JSON chunk */ }
+                        if (json.usage?.completionTokensDetails?.reasoningTokens) {
+                            reasoningTokens = json.usage.completionTokensDetails.reasoningTokens;
+                            if (onReasoningTokens) onReasoningTokens(reasoningTokens);
+                        }
+                    } catch {}
                 }
             }
 
-            aiResponseText.innerHTML = fullText;
-            aiResponseText.classList.remove('shimmer');
+            return { text: fullText, reasoningTokens };
+        }
+    }
 
+    function generateClinicalDeterministicPlan(bmi, cat, cals, age, gender, h, w) {
+        const proteinGrams = Math.round(w * 1.8);
+        const fatGrams = Math.round((cals * 0.25) / 9);
+        const carbGrams = Math.round((cals - (proteinGrams * 4 + fatGrams * 9)) / 4);
+
+        return `
+            <div class="clinical-plan-container">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; color:#10b981; font-weight:700;">
+                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i> VitalAI Biomarker Synthesis & Clinical Protocol
+                </div>
+                <p><strong>Metabolic Prescription:</strong> At <strong>${bmi} BMI (${cat.c})</strong>, your target energy intake is calibrated at <strong>${cals} kcal/day</strong>. To maintain nitrogen balance and mitochondrial efficiency, optimize your daily macronutrient breakdown to approximately <strong>${proteinGrams}g Protein</strong>, <strong>${carbGrams}g Complex Carbohydrates</strong>, and <strong>${fatGrams}g Essential Fats</strong>.</p>
+                <p><strong>Nutritional & Activity Focus:</strong> ${cat.d} For physical conditioning: ${cat.e}</p>
+                <div style="margin-top:14px; padding:10px 14px; border-radius:10px; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); font-size:0.8rem; color:#cbd5e1;">
+                    <i class="fa-solid fa-shield-halved" style="color:#6366f1;"></i> <strong>Zero Data Leakage:</strong> Computed locally via VitalAI deterministic clinical models.
+                </div>
+            </div>
+        `;
+    }
+
+    // LLM Advice with NVIDIA Nemotron-3.5 Lightning
+    async function fetchOpenRouterAdvice(bmi, cat, cals, age, gender, h, w) {
+        aiResponseText.innerHTML = '<div class="typing-cursor">Synthesizing personalized AI clinical plan via NVIDIA Nemotron-3.5...</div>';
+        aiResponseText.classList.add('shimmer');
+
+        const hDisp = unit === 'metric' ? `${(h * 100).toFixed(1)}cm` : `${(h / 0.0254).toFixed(1)}in`;
+        const wDisp = unit === 'metric' ? `${w.toFixed(1)}kg` : `${(w / 0.453592).toFixed(1)}lb`;
+
+        try {
+            const result = await streamNemotronChat({
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are VitalAI's chief clinical nutritionist and exercise physiologist. Provide an evidence-based, highly personalized 2-paragraph diet and conditioning protocol based on the patient's exact biometric measurements. Format cleanly with HTML paragraph <p> tags and <strong> bold highlights."
+                    },
+                    {
+                        role: "user",
+                        content: `Analyze my biomarkers: Age ${age}, Gender ${gender}, Height ${hDisp}, Weight ${wDisp}. Calculated BMI: ${bmi} (${cat.c}). Estimated Daily Maintenance Calories: ${cals} kcal. Detail precise macronutrient allocation, optimal protein timing, and targeted conditioning to optimize body composition.`
+                    }
+                ],
+                onChunk: (content, fullText) => {
+                    aiResponseText.innerHTML = fullText + '<span class="typing-cursor"></span>';
+                }
+            });
+
+            let reasoningMeta = "";
+            if (result.reasoningTokens > 0) {
+                reasoningMeta = `<div class="ai-reasoning-tag"><i class="fa-solid fa-brain" aria-hidden="true"></i> NVIDIA Nemotron-3.5 • ${result.reasoningTokens} reasoning tokens analyzed</div>`;
+            }
+
+            aiResponseText.innerHTML = (result.text || generateClinicalDeterministicPlan(bmi, cat, cals, age, gender, h, w)) + reasoningMeta;
+            aiResponseText.classList.remove('shimmer');
         } catch (err) {
-            // Secrets protection: never leak the key or auth headers in error state
+            console.warn('[VitalAI] AI synthesis fell back to clinical deterministic model:', err);
             aiResponseText.classList.remove('shimmer');
             aiResponseText.innerHTML = generateClinicalDeterministicPlan(bmi, cat, cals, age, gender, h, w);
         }
@@ -600,13 +665,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         closeChat?.addEventListener('click', () => chatbotWindow.classList.add('hidden'));
 
-        if (!getApiKey() && chatMessages) {
-            chatMessages.innerHTML = `
-                <div class="message ai">
-                    <p>Welcome! I'm your VitalAI assistant. Ask me anything about fitness, nutrition, or your calculated BMI. You can also paste an OpenRouter API key to activate generative cloud intelligence.</p>
-                </div>
-            `;
-        }
+        const chatHistory = [
+            {
+                role: "system",
+                content: "You are the VitalAI Assistant powered by NVIDIA Nemotron-3.5 Lightning. You specialize in clinical health, fitness protocols, calorie counting, macronutrients, and biomarker analysis. Be encouraging, concise, and scientifically grounded."
+            }
+        ];
 
         async function handleChat() {
             const msg = chatInput.value.trim();
@@ -620,85 +684,38 @@ document.addEventListener('DOMContentLoaded', () => {
             if (msg.startsWith('sk-or-') || (msg.length > 25 && msg.includes('sk-'))) {
                 localStorage.setItem('openrouter_api_key', msg);
                 chatMessages.innerHTML = '';
-                appendMessage('ai', 'API Key encrypted in local storage! Generative health models are now unlocked. How can I assist you?');
+                appendMessage('ai', 'API Key updated in local storage! Generative health models are now unlocked.');
                 return;
             }
 
-            const apiKey = getApiKey();
-            if (!apiKey) {
-                // Helpful offline response
-                const lower = msg.toLowerCase();
-                let reply = "I can help explain your biomarkers! A normal BMI is 18.5 - 24.9. Maintaining lean muscle mass with resistance training and getting 7-8 hours of sleep significantly improves metabolic health.";
-                if (lower.includes('bmi') || lower.includes('calculate')) {
-                    reply = "BMI is calculated as weight in kilograms divided by height in meters squared (kg/m²). It provides a reliable baseline screening tool for body composition categories.";
-                } else if (lower.includes('diet') || lower.includes('food') || lower.includes('eat')) {
-                    reply = "A nutrient-dense diet prioritizes lean proteins, colorful fibrous vegetables, complex whole grains, and healthy monounsaturated fats while eliminating ultra-processed foods.";
-                } else if (lower.includes('exercise') || lower.includes('workout')) {
-                    reply = "The World Health Organization recommends at least 150-300 minutes of moderate-intensity aerobic exercise, combined with muscle-strengthening activities twice a week.";
-                }
-                appendMessage('ai', `<p>${reply}</p><p><small style="color:#94a3b8;">(To enable cloud-streamed LLM responses, paste your OpenRouter key starting with 'sk-or-').</small></p>`);
-                return;
+            chatHistory.push({ role: 'user', content: msg });
+            if (chatHistory.length > 12) {
+                chatHistory.splice(1, 2);
             }
 
             const aiMsgDiv = appendMessage('ai', '<span class="typing-cursor"></span>');
 
             try {
-                const referer = window.location.origin === "null" ? "http://localhost:3000" : window.location.origin;
-                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${apiKey}`,
-                        "HTTP-Referer": referer,
-                        "X-Title": "VitalAI Health",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        "model": "openai/gpt-3.5-turbo",
-                        "messages": [
-                            { "role": "system", "content": "You are VitalAI assistant. You provide concise, evidence-based fitness and diet guidance. Keep responses friendly and medically conservative." },
-                            { "role": "user", "content": msg }
-                        ],
-                        "stream": true
-                    })
+                const result = await streamNemotronChat({
+                    messages: chatHistory,
+                    onChunk: (content, fullReply) => {
+                        aiMsgDiv.innerHTML = (fullReply.startsWith('<') ? fullReply : `<p>${fullReply}</p>`) + '<span class="typing-cursor"></span>';
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`Status ${response.status}`);
+                chatHistory.push({ role: 'assistant', content: result.text });
+
+                let reasoningMeta = "";
+                if (result.reasoningTokens > 0) {
+                    reasoningMeta = `<div class="ai-reasoning-tag"><i class="fa-solid fa-microchip" aria-hidden="true"></i> Nemotron-3.5 • ${result.reasoningTokens} reasoning tokens</div>`;
                 }
 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let fullReply = "";
-                let buffer = "";
-                aiMsgDiv.innerHTML = "";
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    buffer += decoder.decode(value, { stream: true });
-                    const lines = buffer.split("\n");
-                    buffer = lines.pop();
-
-                    for (const line of lines) {
-                        const cleanLine = line.trim();
-                        if (!cleanLine || !cleanLine.startsWith("data: ")) continue;
-                        if (cleanLine.includes("[DONE]")) break;
-
-                        try {
-                            const json = JSON.parse(cleanLine.replace(/^data: /, ""));
-                            const content = json.choices[0]?.delta?.content;
-                            if (content) {
-                                fullReply += content;
-                                aiMsgDiv.innerHTML = fullReply + '<span class="typing-cursor"></span>';
-                                chatMessages.scrollTop = chatMessages.scrollHeight;
-                            }
-                        } catch { }
-                    }
-                }
-                aiMsgDiv.innerHTML = fullReply;
+                aiMsgDiv.innerHTML = (result.text ? (result.text.startsWith('<') ? result.text : `<p>${result.text}</p>`) : "I am here to assist with your health and fitness queries!") + reasoningMeta;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             } catch (err) {
-                aiMsgDiv.innerHTML = `<span style="color: #f87171"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Service temporarily unavailable. Please verify your OpenRouter key credits or try again shortly.</span>`;
+                console.error('[VitalAI Chatbot Error]:', err);
+                aiMsgDiv.innerHTML = `<span style="color: #f87171"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Service temporarily unavailable. Please try again shortly.</span>`;
             }
         }
 

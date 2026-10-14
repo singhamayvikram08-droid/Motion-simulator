@@ -1900,3 +1900,17 @@ body.dark-mode .message.ai {
 .pulse-highlight {
     animation: pulseHighlight 1.4s ease-out;
 }
+
+.ai-reasoning-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--icon-btn-hover-bg);
+    color: var(--primary);
+    border: 1px solid var(--border-subtle);
+}

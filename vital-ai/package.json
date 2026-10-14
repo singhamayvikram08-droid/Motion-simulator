@@ -11,5 +11,8 @@
   },
   "devDependencies": {
     "vite": "^6.0.0"
+  },
+  "dependencies": {
+    "@openrouter/sdk": "^1.4.25"
   }
 }
