@@ -106,6 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Smart Input & Wearables
     const smartPromptInput = document.getElementById('smart-prompt-input');
     const smartParseBtn = document.getElementById('smart-parse-btn');
+    const smartMicBtn = document.getElementById('smart-mic-btn');
+    const promptChips = document.querySelectorAll('.prompt-chip');
     const syncAppleHealth = document.getElementById('sync-apple-health');
     const syncGoogleFit = document.getElementById('sync-google-fit');
     const syncGarmin = document.getElementById('sync-garmin');
@@ -938,15 +940,14 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
 
 
     // ---- UNIT TOGGLE ----
-    unitBtns.forEach(btn => btn.addEventListener('click', (e) => {
-        e.preventDefault();
+    function setUnitMode(newUnit) {
+        if (!newUnit || (newUnit !== 'metric' && newUnit !== 'imperial')) return;
+        unit = newUnit;
         unitBtns.forEach(b => {
-            b.classList.remove('active');
-            b.setAttribute('aria-pressed', 'false');
+            const isActive = b.dataset.unit === unit;
+            b.classList.toggle('active', isActive);
+            b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
-        btn.classList.add('active');
-        btn.setAttribute('aria-pressed', 'true');
-        unit = btn.dataset.unit;
         clearFormErrors();
 
         if (unit === 'metric') {
@@ -976,6 +977,11 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
             if (heightFt) heightFt.required = true;
             if (heightIn) heightIn.required = true;
         }
+    }
+
+    unitBtns.forEach(btn => btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        setUnitMode(btn.dataset.unit);
     }));
     if (heightCm) heightCm.required = true;
 
@@ -1480,78 +1486,399 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
         updateSimulation(currentWeight);
     }
 
-    // Feature 5: Natural Language & Smart Input Parser
-    function parseNaturalLanguageHealthInput(text) {
-        if (!text) return false;
-        const lower = text.toLowerCase();
-        let matched = false;
+    // Feature 5: Full AI Natural Language & Biomarker Parser
+    function triggerFieldGlow(el) {
+        if (!el) return;
+        el.classList.remove('field-highlight');
+        void el.offsetWidth; // trigger reflow
+        el.classList.add('field-highlight');
+        setTimeout(() => el.classList.remove('field-highlight'), 1800);
+    }
 
-        // Gender
-        if (lower.includes('female') || lower.includes('woman') || lower.includes('girl') || /\bf\b/.test(lower)) {
-            const fRadio = document.querySelector('input[name="gender"][value="female"]');
-            if (fRadio) { fRadio.checked = true; matched = true; }
-        } else if (lower.includes('male') || lower.includes('man') || lower.includes('guy') || /\bm\b/.test(lower)) {
-            const mRadio = document.querySelector('input[name="gender"][value="male"]');
-            if (mRadio) { mRadio.checked = true; matched = true; }
+    function parseNaturalLanguageHealthInput(text) {
+        if (!text) return { matched: false, summary: [] };
+        const lower = text.toLowerCase().trim();
+        const extractedSummary = [];
+
+        // 1. Age: "21 age", "21 yr", "21 yrs", "21 yr old", "21 years", "age 21", "age: 21", "im 21", "just 21", or standalone "21"
+        let ageVal = null;
+        const prefixAge = lower.match(/\bage\s*(?:is|at|of|[:=-])?\s*(\d{1,3})\b/);
+        const suffixAge = lower.match(/\b(\d{1,3})\s*(?:age|years?(\s*old)?|y\/o|yrs?(\s*old)?|yr(\s*old)?|yo|y)\b/);
+        const convAge = lower.match(/\b(?:i(?:'m|m|\s+am)|just)\s*(\d{1,3})\b/);
+
+        if (prefixAge) ageVal = parseInt(prefixAge[1]);
+        else if (suffixAge) ageVal = parseInt(suffixAge[1]);
+        else if (convAge) ageVal = parseInt(convAge[1]);
+        else if (/^\s*(\d{1,2})\s*$/.test(lower)) {
+            const raw = parseInt(lower);
+            if (raw >= 10 && raw <= 110) ageVal = raw;
         }
 
-        // Age: e.g. "24yo", "24 years", "24 y/o", "age 24"
-        const ageMatch = lower.match(/(?:age\s*)?(\d{1,3})\s*(?:yo|years?|y\/o|yrs?)/) || lower.match(/\b(\d{2})\s*(?:years?|yo)\b/);
-        if (ageMatch && ageInput) {
-            const a = parseInt(ageMatch[1]);
-            if (a >= 12 && a <= 120) {
-                ageInput.value = a;
-                matched = true;
+        if (ageVal !== null && ageVal >= 10 && ageVal <= 120 && ageInput) {
+            ageInput.value = ageVal;
+            triggerFieldGlow(ageBox);
+            ageError?.classList.remove('visible');
+            ageBox?.classList.remove('field-error');
+            extractedSummary.push(`Age: ${ageVal} yrs`);
+        }
+
+        // 2. Gender
+        if (/\b(female|woman|girl|lady|femme)\b/i.test(lower)) {
+            const fRadio = document.querySelector('input[name="gender"][value="female"]');
+            if (fRadio) {
+                fRadio.checked = true;
+                extractedSummary.push('Gender: Female');
+            }
+        } else if (/\b(male|man|guy|boy|homme)\b/i.test(lower)) {
+            const mRadio = document.querySelector('input[name="gender"][value="male"]');
+            if (mRadio) {
+                mRadio.checked = true;
+                extractedSummary.push('Gender: Male');
             }
         }
 
-        // Weight: e.g. "72 kg", "72kg", "160 lbs", "160lb"
-        const weightMatch = lower.match(/(\d+(?:\.\d+)?)\s*(?:kg|kgs|kilos?)/);
-        const weightLbMatch = lower.match(/(\d+(?:\.\d+)?)\s*(?:lbs?|pounds?)/);
-        if (weightMatch && weightInput) {
-            weightInput.value = weightMatch[1];
-            matched = true;
+        // 3. Weight
+        const weightKgMatch = lower.match(/\b(?:weight\s*[:=-]?\s*)?(\d+(?:\.\d+)?)\s*(?:kg|kgs|kilos?|kilograms?)\b/) || lower.match(/\b(\d{2,3}(?:\.\d+)?)\s*weight\b/);
+        const weightLbMatch = lower.match(/\b(?:weight\s*[:=-]?\s*)?(\d+(?:\.\d+)?)\s*(?:lbs?|pounds?)\b/);
+        const weightGenMatch = lower.match(/\b(?:weight\s*(?:is|at|of|[:=-])?\s*)(\d+(?:\.\d+)?)\b/);
+
+        if (weightKgMatch && weightInput) {
+            setUnitMode('metric');
+            weightInput.value = weightKgMatch[1];
+            triggerFieldGlow(weightBox);
+            weightError?.classList.remove('visible');
+            weightBox?.classList.remove('field-error');
+            extractedSummary.push(`Weight: ${weightKgMatch[1]} kg`);
         } else if (weightLbMatch && weightInput) {
+            setUnitMode('imperial');
             weightInput.value = weightLbMatch[1];
-            matched = true;
+            triggerFieldGlow(weightBox);
+            weightError?.classList.remove('visible');
+            weightBox?.classList.remove('field-error');
+            extractedSummary.push(`Weight: ${weightLbMatch[1]} lb`);
+        } else if (weightGenMatch && weightInput) {
+            weightInput.value = weightGenMatch[1];
+            triggerFieldGlow(weightBox);
+            weightError?.classList.remove('visible');
+            weightBox?.classList.remove('field-error');
+            extractedSummary.push(`Weight: ${weightGenMatch[1]} ${unit === 'metric' ? 'kg' : 'lb'}`);
         }
 
-        // Height: e.g. "175 cm", "175cm", "5ft 10in", "5'10"
-        const heightCmMatch = lower.match(/(\d{2,3})\s*cm/);
-        const heightFtInMatch = lower.match(/(\d)\s*(?:ft|feet|'|’)\s*(\d{1,2})?\s*(?:in|inches|"|”)?/);
+        // 4. Height
+        const heightCmMatch = lower.match(/\b(?:height\s*[:=-]?\s*)?(\d{2,3}(?:\.\d+)?)\s*cm\b/) ||
+                              lower.match(/\b(?:height\s*(?:is|at|of|[:=-])?\s*)(\d{2,3})\b/) ||
+                              lower.match(/\b(\d{2,3})\s*height\b/);
+        const heightFtInMatch = lower.match(/\b(?:height\s*[:=-]?\s*)?(\d)\s*(?:ft|feet|'|’)\s*(\d{1,2})?\s*(?:in|inches|"|”)?\b/) ||
+                                lower.match(/\b(\d)\s*['’]\s*(\d{1,2})"?\b/);
+
         if (heightCmMatch && heightCm) {
+            setUnitMode('metric');
             heightCm.value = heightCmMatch[1];
-            matched = true;
+            triggerFieldGlow(heightBox);
+            heightError?.classList.remove('visible');
+            heightBox?.classList.remove('field-error');
+            extractedSummary.push(`Height: ${heightCmMatch[1]} cm`);
         } else if (heightFtInMatch && heightFt) {
+            setUnitMode('imperial');
             heightFt.value = heightFtInMatch[1];
-            if (heightIn && heightFtInMatch[2]) heightIn.value = heightFtInMatch[2];
-            matched = true;
+            const inVal = heightFtInMatch[2] ? heightFtInMatch[2] : '0';
+            if (heightIn) heightIn.value = inVal;
+            triggerFieldGlow(imperialBox);
+            imperialError?.classList.remove('visible');
+            imperialBox?.classList.remove('field-error');
+            extractedSummary.push(`Height: ${heightFtInMatch[1]}ft ${inVal}in`);
         }
 
-        // Waist: e.g. "waist 82", "82cm waist", "waist 32 in"
-        const waistMatch = lower.match(/(?:waist\s*(?:is|at|of)?\s*)(\d+(?:\.\d+)?)/) || lower.match(/(\d+(?:\.\d+)?)\s*(?:cm|in)?\s*waist/);
+        // 5. Waist: e.g. "waist 82", "82cm waist", "waist 32 in", "32 waist"
+        const waistMatch = lower.match(/\b(?:waist\s*(?:is|at|of|[:=-])?\s*)(\d+(?:\.\d+)?)\s*(?:cm|in|inches)?\b/) ||
+                           lower.match(/\b(\d+(?:\.\d+)?)\s*(?:cm|in)?\s*waist\b/);
         if (waistMatch && waistInput) {
             waistInput.value = waistMatch[1];
-            matched = true;
+            triggerFieldGlow(waistBox);
+            waistError?.classList.remove('visible');
+            waistBox?.classList.remove('field-error');
+            extractedSummary.push(`Waist: ${waistMatch[1]} ${unit === 'metric' ? 'cm' : 'in'}`);
         }
 
-        return matched;
+        // 6. Ethnicity Scale
+        if (ethnicityScale) {
+            if (/\b(south\s*asian|indian|pakistani|bangladeshi|desi)\b/i.test(lower)) {
+                ethnicityScale.value = 'south_asian';
+                extractedSummary.push('Ethnicity: South Asian');
+            } else if (/\b(east\s*asian|chinese|japanese|korean)\b/i.test(lower)) {
+                ethnicityScale.value = 'east_asian';
+                extractedSummary.push('Ethnicity: East Asian');
+            } else if (/\b(hispanic|latino|latina)\b/i.test(lower)) {
+                ethnicityScale.value = 'hispanic';
+                extractedSummary.push('Ethnicity: Hispanic');
+            } else if (/\b(black|african\s*american|african)\b/i.test(lower)) {
+                ethnicityScale.value = 'black';
+                extractedSummary.push('Ethnicity: Black / African');
+            } else if (/\b(caucasian|white|european|standard|who)\b/i.test(lower)) {
+                ethnicityScale.value = 'who_standard';
+                extractedSummary.push('Ethnicity: WHO Standard');
+            }
+        }
+
+        // 7. Activity Level
+        if (activityLevel) {
+            if (/\b(sedentary|desk\s*job|no\s*exercise|inactive)\b/i.test(lower)) {
+                activityLevel.value = '1.2';
+                extractedSummary.push('Activity: Sedentary');
+            } else if (/\b(lightly?\s*active|light\s*exercise|walking)\b/i.test(lower)) {
+                activityLevel.value = '1.375';
+                extractedSummary.push('Activity: Light');
+            } else if (/\b(moderately?\s*active|moderate\s*exercise|gym|workout)\b/i.test(lower)) {
+                activityLevel.value = '1.55';
+                extractedSummary.push('Activity: Moderate');
+            } else if (/\b(very\s*active|heavy\s*exercise|hard\s*workout)\b/i.test(lower)) {
+                activityLevel.value = '1.725';
+                extractedSummary.push('Activity: Very Active');
+            } else if (/\b(athlete|extreme|twice\s*a\s*day)\b/i.test(lower)) {
+                activityLevel.value = '1.9';
+                extractedSummary.push('Activity: Athlete');
+            }
+        }
+
+        // 8. Goal
+        if (userGoal) {
+            if (/\b(cut|cutting|fat\s*loss|lose\s*fat|lose\s*weight|weight\s*loss|shred)\b/i.test(lower)) {
+                userGoal.value = 'fat_loss';
+                extractedSummary.push('Goal: Fat Loss');
+            } else if (/\b(recomp|recomposition|body\s*recomp|lean\s*muscle)\b/i.test(lower)) {
+                userGoal.value = 'recomp';
+                extractedSummary.push('Goal: Recomp');
+            } else if (/\b(bulk|bulking|build\s*muscle|gain\s*muscle|hypertrophy|mass)\b/i.test(lower)) {
+                userGoal.value = 'lean_bulk';
+                extractedSummary.push('Goal: Muscle Gain');
+            } else if (/\b(maintain|maintenance|stay\s*same)\b/i.test(lower)) {
+                userGoal.value = 'maintain';
+                extractedSummary.push('Goal: Maintenance');
+            } else if (/\b(longevity|anti-aging|live\s*longer|metabolic\s*health)\b/i.test(lower)) {
+                userGoal.value = 'longevity';
+                extractedSummary.push('Goal: Longevity');
+            }
+        }
+
+        return { matched: extractedSummary.length > 0, summary: extractedSummary };
+    }
+
+    // Deep LLM Biometric Extraction via OpenRouter API
+    async function extractBiometricsWithLLM(text) {
+        try {
+            const apiKey = getApiKey();
+            if (!apiKey) return null;
+            const referer = (typeof window !== 'undefined' && window.location.origin !== "null" && window.location.origin) 
+                ? window.location.origin 
+                : "https://vital-ai.onrender.com";
+
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "HTTP-Referer": referer,
+                    "X-Title": "VitalAI Health & Biomarkers",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: OPENROUTER_MODEL,
+                    messages: [
+                        {
+                            role: "system",
+                            content: "You are a clinical biometric NLP extractor. Extract health attributes from user input into strict JSON. Keys: age (integer), gender (\"male\"|\"female\"), heightCm (number), heightFt (number), heightIn (number), weightKg (number), weightLb (number), waistCm (number), waistIn (number), ethnicity (\"who_standard\"|\"south_asian\"|\"east_asian\"|\"hispanic\"|\"black\"), activity (\"1.2\"|\"1.375\"|\"1.55\"|\"1.725\"|\"1.9\"), goal (\"fat_loss\"|\"recomp\"|\"lean_bulk\"|\"maintain\"|\"longevity\"). Omit unmentioned keys. Output ONLY valid JSON, without codeblock formatting or explanations."
+                        },
+                        {
+                            role: "user",
+                            content: text
+                        }
+                    ],
+                    stream: false
+                })
+            });
+
+            if (!response.ok) return null;
+            const data = await response.json();
+            const rawContent = data.choices?.[0]?.message?.content || "";
+            const cleanJson = rawContent.replace(/```json/gi, '').replace(/```/g, '').trim();
+            return JSON.parse(cleanJson);
+        } catch (err) {
+            console.warn('[VitalAI] LLM extraction fallback to local NLP:', err);
+            return null;
+        }
+    }
+
+    function applyLLMMetrics(aiData, summaryList) {
+        if (!aiData || typeof aiData !== 'object') return;
+
+        if (aiData.age && ageInput && (!ageInput.value || ageInput.value !== String(aiData.age))) {
+            ageInput.value = aiData.age;
+            triggerFieldGlow(ageBox);
+            if (!summaryList.some(s => s.startsWith('Age'))) summaryList.push(`Age: ${aiData.age} yrs`);
+        }
+
+        if (aiData.gender) {
+            const radio = document.querySelector(`input[name="gender"][value="${aiData.gender}"]`);
+            if (radio) {
+                radio.checked = true;
+                if (!summaryList.some(s => s.startsWith('Gender'))) summaryList.push(`Gender: ${aiData.gender}`);
+            }
+        }
+
+        if (aiData.weightKg && weightInput) {
+            setUnitMode('metric');
+            weightInput.value = aiData.weightKg;
+            triggerFieldGlow(weightBox);
+            if (!summaryList.some(s => s.startsWith('Weight'))) summaryList.push(`Weight: ${aiData.weightKg} kg`);
+        } else if (aiData.weightLb && weightInput) {
+            setUnitMode('imperial');
+            weightInput.value = aiData.weightLb;
+            triggerFieldGlow(weightBox);
+            if (!summaryList.some(s => s.startsWith('Weight'))) summaryList.push(`Weight: ${aiData.weightLb} lb`);
+        }
+
+        if (aiData.heightCm && heightCm) {
+            setUnitMode('metric');
+            heightCm.value = aiData.heightCm;
+            triggerFieldGlow(heightBox);
+            if (!summaryList.some(s => s.startsWith('Height'))) summaryList.push(`Height: ${aiData.heightCm} cm`);
+        } else if (aiData.heightFt && heightFt) {
+            setUnitMode('imperial');
+            heightFt.value = aiData.heightFt;
+            if (heightIn) heightIn.value = aiData.heightIn || 0;
+            triggerFieldGlow(imperialBox);
+            if (!summaryList.some(s => s.startsWith('Height'))) summaryList.push(`Height: ${aiData.heightFt}ft ${aiData.heightIn || 0}in`);
+        }
+
+        if (aiData.waistCm && waistInput) {
+            waistInput.value = aiData.waistCm;
+            triggerFieldGlow(waistBox);
+            if (!summaryList.some(s => s.startsWith('Waist'))) summaryList.push(`Waist: ${aiData.waistCm} cm`);
+        } else if (aiData.waistIn && waistInput) {
+            waistInput.value = aiData.waistIn;
+            triggerFieldGlow(waistBox);
+            if (!summaryList.some(s => s.startsWith('Waist'))) summaryList.push(`Waist: ${aiData.waistIn} in`);
+        }
+
+        if (aiData.ethnicity && ethnicityScale) {
+            ethnicityScale.value = aiData.ethnicity;
+            if (!summaryList.some(s => s.startsWith('Ethnicity'))) summaryList.push(`Ethnicity: ${aiData.ethnicity}`);
+        }
+
+        if (aiData.activity && activityLevel) {
+            activityLevel.value = aiData.activity;
+            if (!summaryList.some(s => s.startsWith('Activity'))) summaryList.push(`Activity: ${activityLevel.options[activityLevel.selectedIndex].text}`);
+        }
+
+        if (aiData.goal && userGoal) {
+            userGoal.value = aiData.goal;
+            if (!summaryList.some(s => s.startsWith('Goal'))) summaryList.push(`Goal: ${userGoal.options[userGoal.selectedIndex].text}`);
+        }
     }
 
     if (smartParseBtn && smartPromptInput) {
-        function handleSmartParse() {
+        async function handleSmartParse(autoTriggerIfComplete = true) {
             const text = smartPromptInput.value.trim();
             if (!text) return;
-            const success = parseNaturalLanguageHealthInput(text);
-            showToast(success ? 'AI Smart Input: Biomarker fields populated!' : 'Could not parse health metrics. Format: "24yo male, 178 cm, 74 kg, 82 cm waist"');
+
+            // Step 1: Immediate local NLP parsing (0ms instant response)
+            const localRes = parseNaturalLanguageHealthInput(text);
+
+            // Button visual loading indicator
+            const origBtnHtml = smartParseBtn.innerHTML;
+            smartParseBtn.disabled = true;
+            smartParseBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> <span>AI Thinking...</span>';
+
+            // Step 2: LLM Deep extraction for conversational syntax
+            try {
+                const aiData = await extractBiometricsWithLLM(text);
+                if (aiData) {
+                    applyLLMMetrics(aiData, localRes.summary);
+                }
+            } catch (err) {
+                console.warn('[VitalAI] LLM extraction skipped:', err);
+            } finally {
+                smartParseBtn.disabled = false;
+                smartParseBtn.innerHTML = origBtnHtml;
+            }
+
+            if (localRes.summary.length > 0) {
+                showToast(`✨ AI Extracted: ${localRes.summary.join(' • ')}`);
+
+                // Check if primary metrics (weight, height, age) are all filled - if so, auto calculate!
+                const hasWeight = !!(weightInput && parseFloat(weightInput.value) > 0);
+                const hasHeight = unit === 'metric' 
+                    ? !!(heightCm && parseFloat(heightCm.value) > 0)
+                    : !!(heightFt && parseFloat(heightFt.value) > 0);
+                const hasAge = !!(ageInput && parseInt(ageInput.value) > 0);
+
+                if (autoTriggerIfComplete && hasWeight && hasHeight && hasAge) {
+                    setTimeout(() => {
+                        bmiForm?.dispatchEvent(new Event('submit', { cancelable: true }));
+                    }, 350);
+                }
+            } else {
+                showToast('Could not parse health metrics. Try: "21 age", "21 yr", or "21 yr male 175cm 72kg"');
+            }
         }
-        smartParseBtn.addEventListener('click', handleSmartParse);
+
+        smartParseBtn.addEventListener('click', () => handleSmartParse(true));
         smartPromptInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                handleSmartParse();
+                handleSmartParse(true);
             }
         });
+
+        // Quick Prompt Chips
+        promptChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const prompt = chip.dataset.prompt;
+                if (prompt && smartPromptInput) {
+                    smartPromptInput.value = prompt;
+                    handleSmartParse(true);
+                }
+            });
+        });
+
+        // Speech Recognition for Smart Input Mic
+        const SmartSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SmartSpeechRecognition && smartMicBtn) {
+            const smartRecognition = new SmartSpeechRecognition();
+            smartRecognition.continuous = false;
+            smartRecognition.lang = 'en-US';
+
+            smartMicBtn.addEventListener('click', () => {
+                if (smartMicBtn.classList.contains('active')) {
+                    smartRecognition.stop();
+                } else {
+                    try {
+                        smartRecognition.start();
+                        smartMicBtn.classList.add('active');
+                        smartPromptInput.placeholder = 'Listening... Speak "21 age", "21 yr male 175cm 72kg"...';
+                    } catch {}
+                }
+            });
+
+            smartRecognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                smartMicBtn.classList.remove('active');
+                smartPromptInput.value = transcript;
+                smartPromptInput.placeholder = "Type: '21 age', '21 yr', '21 yr male 175cm 72kg'...";
+                handleSmartParse(true);
+            };
+
+            smartRecognition.onerror = () => {
+                smartMicBtn.classList.remove('active');
+                smartPromptInput.placeholder = "Type: '21 age', '21 yr', '21 yr male 175cm 72kg'...";
+            };
+
+            smartRecognition.onend = () => {
+                smartMicBtn.classList.remove('active');
+                smartPromptInput.placeholder = "Type: '21 age', '21 yr', '21 yr male 175cm 72kg'...";
+            };
+        } else if (smartMicBtn) {
+            smartMicBtn.style.display = 'none';
+        }
     }
 
     // Wearable Sync Listeners

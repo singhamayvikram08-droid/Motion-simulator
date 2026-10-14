@@ -201,11 +201,21 @@
                             <div class="nlp-prompt-wrapper">
                                 <div class="nlp-input-row">
                                     <i class="fa-solid fa-wand-magic-sparkles text-gradient" aria-hidden="true"></i>
-                                    <input type="text" id="smart-prompt-input" placeholder="Type prompt: e.g. '24yo male, 178 cm, 74 kg, 82 cm waist' or dictate with mic..." aria-label="Smart Natural Language Health Input">
-                                    <button type="button" id="smart-parse-btn" class="smart-action-btn" title="Parse with AI Smart Input">
-                                        <span>Auto-Fill</span>
-                                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                    <input type="text" id="smart-prompt-input" placeholder="Type: '21 age', '21 yr', '21 yr male 175cm 72kg'..." aria-label="Smart Natural Language Health Input">
+                                    <button type="button" id="smart-mic-btn" class="smart-mic-btn" title="Speak health metrics to AI">
+                                        <i class="fa-solid fa-microphone" aria-hidden="true"></i>
                                     </button>
+                                    <button type="button" id="smart-parse-btn" class="smart-action-btn" title="Parse with AI Smart Input">
+                                        <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                                        <span>AI Auto-Fill</span>
+                                    </button>
+                                </div>
+                                <div class="quick-prompt-chips">
+                                    <span class="chip-label"><i class="fa-solid fa-sparkles text-gradient" aria-hidden="true"></i> Quick Prompts:</span>
+                                    <button type="button" class="prompt-chip" data-prompt="21 age">21 age</button>
+                                    <button type="button" class="prompt-chip" data-prompt="21 yr">21 yr</button>
+                                    <button type="button" class="prompt-chip" data-prompt="21 yr male 178cm 72kg">21 yr male 178cm 72kg</button>
+                                    <button type="button" class="prompt-chip" data-prompt="22 yr female 165cm 58kg 70cm waist">22 yr female 165cm 58kg</button>
                                 </div>
                                 <div class="wearable-sync-strip">
                                     <span class="sync-label"><i class="fa-solid fa-link" aria-hidden="true"></i> Live Sync:</span>

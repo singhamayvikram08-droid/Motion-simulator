@@ -2086,6 +2086,98 @@ body.dark-mode .message.ai {
     box-shadow: 0 4px 14px var(--accent-glow);
 }
 
+.smart-action-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.smart-mic-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--icon-btn-bg);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-sec);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.smart-mic-btn:hover {
+    background: var(--icon-btn-hover-bg);
+    color: var(--primary);
+    border-color: var(--border-hover);
+}
+
+.smart-mic-btn.active {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #ef4444;
+    animation: mic-pulse 1.2s infinite ease-in-out;
+}
+
+@keyframes mic-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+    50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+.quick-prompt-chips {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+}
+
+.chip-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.prompt-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    background: rgba(168, 85, 247, 0.08);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    color: var(--text-sec);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.prompt-chip:hover {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: var(--primary);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.field-highlight {
+    animation: field-ai-glow 1.8s ease-out;
+}
+
+@keyframes field-ai-glow {
+    0% {
+        border-color: #a855f7 !important;
+        box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.45), 0 0 16px rgba(168, 85, 247, 0.35) !important;
+    }
+    100% {
+        border-color: var(--border) !important;
+        box-shadow: none !important;
+    }
+}
+
 .wearable-sync-strip {
     display: flex;
     align-items: center;
