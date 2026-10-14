@@ -216,11 +216,61 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
-    // ---- INIT THEME ----
-    if (localStorage.getItem('ai_theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-        if (themeToggle) themeToggle.innerHTML = '<i class="fa-solid fa-sun" aria-hidden="true"></i>';
+    // ---- ULTRA-PREMIUM DUAL THEME ENGINE (DARK OBSIDIAN / LIGHT LUXURY) ----
+    function applyTheme(isDark, animate = false) {
+        document.body.classList.toggle('dark-mode', isDark);
+        document.documentElement.classList.toggle('dark-mode', isDark);
+        try {
+            localStorage.setItem('ai_theme', isDark ? 'dark' : 'light');
+        } catch {}
+
+        // Dynamic browser theme color
+        const themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) {
+            themeMeta.setAttribute('content', isDark ? '#0b0416' : '#f7f4fb');
+        }
+
+        // Sync all theme toggle buttons across Auth, Header, and Sidebar
+        const toggleBtns = document.querySelectorAll('.theme-toggle-btn');
+        toggleBtns.forEach(btn => {
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            }
+            const label = btn.querySelector('.theme-toggle-label');
+            if (label) {
+                label.textContent = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+            }
+            btn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+            btn.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+            if (animate) {
+                btn.classList.remove('theme-toggle-pop');
+                void btn.offsetWidth; // trigger reflow for smooth re-trigger
+                btn.classList.add('theme-toggle-pop');
+            }
+        });
+
+        // Dynamic Chart Color Re-rendering
+        if (chartInstance) {
+            renderChart();
+        }
     }
+
+    // Initialize Theme immediately on load
+    const savedTheme = localStorage.getItem('ai_theme');
+    const isInitiallyDark = savedTheme !== 'light'; // Default to ultra-premium dark cyberpunk
+    applyTheme(isInitiallyDark, false);
+
+    // Global Event Delegation for all Theme Toggle Buttons
+    document.addEventListener('click', (e) => {
+        const toggleBtn = e.target.closest('.theme-toggle-btn');
+        if (!toggleBtn) return;
+        e.preventDefault();
+        const currentlyDark = document.body.classList.contains('dark-mode');
+        const nextDark = !currentlyDark;
+        applyTheme(nextDark, true);
+        trackEvent('theme_toggled', { mode: nextDark ? 'dark' : 'light' });
+    });
 
     // ---- AUTHENTICATION ----
     let isSignup = false;
@@ -674,18 +724,6 @@ document.addEventListener('DOMContentLoaded', () => {
         chatInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleChat(); });
     }
 
-    // ---- THEME TOGGLE ----
-    if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
-            const isDark = document.body.classList.toggle('dark-mode');
-            localStorage.setItem('ai_theme', isDark ? 'dark' : 'light');
-            themeToggle.innerHTML = isDark 
-                ? '<i class="fa-solid fa-sun" aria-hidden="true"></i>' 
-                : '<i class="fa-solid fa-moon" aria-hidden="true"></i>';
-            trackEvent('theme_toggled', { mode: isDark ? 'dark' : 'light' });
-            renderChart();
-        });
-    }
 
     // ---- UNIT TOGGLE ----
     unitBtns.forEach(btn => btn.addEventListener('click', (e) => {
@@ -956,6 +994,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = canvas.getContext('2d');
         const hist = currentUser.data.history;
 
+        const isDark = document.body.classList.contains('dark-mode');
+        const tickColor = isDark ? '#d8b4fe' : '#5d4b73';
+        const gridColor = isDark ? 'rgba(168, 85, 247, 0.12)' : 'rgba(139, 92, 246, 0.12)';
+        const bmiColor = isDark ? '#c084fc' : '#8b5cf6';
+        const bmiFill = isDark ? 'rgba(168, 85, 247, 0.18)' : 'rgba(139, 92, 246, 0.12)';
+
         if (chartInstance) chartInstance.destroy();
 
         chartInstance = new Chart(ctx, {
@@ -966,12 +1010,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     {
                         label: 'BMI Trend',
                         data: hist.map(d => d.bmi),
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderColor: bmiColor,
+                        backgroundColor: bmiFill,
                         fill: true,
                         tension: 0.4,
                         borderWidth: 3,
-                        pointRadius: 4,
+                        pointRadius: 5,
+                        pointBackgroundColor: bmiColor,
+                        pointBorderColor: isDark ? '#120921' : '#ffffff',
+                        pointBorderWidth: 2,
                         yAxisID: 'y'
                     },
                     {
@@ -989,13 +1036,27 @@ document.addEventListener('DOMContentLoaded', () => {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: isDark ? 'rgba(18, 9, 33, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        titleColor: isDark ? '#ffffff' : '#180b2b',
+                        bodyColor: isDark ? '#d8b4fe' : '#5d4b73',
+                        borderColor: isDark ? 'rgba(168, 85, 247, 0.3)' : 'rgba(139, 92, 246, 0.25)',
+                        borderWidth: 1,
+                        padding: 10,
+                        cornerRadius: 8
+                    }
+                },
                 scales: {
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { color: tickColor, font: { family: 'Inter', weight: '600', size: 12 } } 
+                    },
                     y: {
                         position: 'left',
-                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
-                        ticks: { color: '#94a3b8' }
+                        grid: { color: gridColor },
+                        ticks: { color: tickColor, font: { family: 'Inter', weight: '600', size: 12 } }
                     },
                     y1: {
                         position: 'right',

@@ -48,18 +48,40 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 
+    <!-- Anti-FOIT Script for Seamless Theme Initialization -->
+    <script>
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('ai_theme');
+                if (savedTheme === 'light') {
+                    document.documentElement.classList.remove('dark-mode');
+                } else {
+                    document.documentElement.classList.add('dark-mode');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <!-- Core Chart Engine -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js" defer></script>
 </head>
 
 <body class="dark-mode">
+    <script>
+        if (localStorage.getItem('ai_theme') === 'light') {
+            document.body.classList.remove('dark-mode');
+        }
+    </script>
     <div class="animated-bg">
         <div class="blob"></div>
     </div>
 
     <!-- AUTH VIEW -->
     <div id="auth-view" class="view active">
+        <button class="icon-btn theme-toggle-btn auth-theme-toggle" aria-label="Toggle dark and light mode" title="Toggle dark / light mode">
+            <i class="fa-solid fa-moon" aria-hidden="true"></i>
+        </button>
         <div class="auth-glass card glass-panel">
             <div class="brand-center">
                 <i class="fa-solid fa-dna text-gradient" style="font-size: 40px; margin-bottom:16px;" aria-hidden="true"></i>
@@ -92,10 +114,10 @@
                 <button type="submit" class="btn-primary w-100" id="auth-btn">Access Dashboard</button>
             </form>
 
-            <div style="margin-top: 18px; text-align: center; font-size: 0.8rem; color: #cbd5e1;">
+            <div style="margin-top: 18px; text-align: center; font-size: 0.8rem; color: var(--text-sec);">
                 <span>By continuing, you accept our </span>
-                <a href="/terms.html" style="color: #38bdf8;">Terms</a> &amp;
-                <a href="/privacy.html" style="color: #38bdf8;">Privacy Policy</a>.
+                <a href="/terms.html" style="color: var(--primary);">Terms</a> &amp;
+                <a href="/privacy.html" style="color: var(--primary);">Privacy Policy</a>.
             </div>
         </div>
     </div>
@@ -119,6 +141,10 @@
                     <a href="#dashboard" class="active" id="nav-dashboard-link">
                         <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
                         <span>Dashboard</span>
+                    </a>
+                    <a href="#toggle-theme" class="theme-toggle-btn" id="sidebar-theme-toggle" role="button">
+                        <i class="fa-solid fa-moon" aria-hidden="true"></i>
+                        <span class="theme-toggle-label">Dark / Light Mode</span>
                     </a>
                     <a href="/privacy.html">
                         <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
@@ -151,7 +177,7 @@
                         </div>
                     </div>
                     <div class="header-actions">
-                        <button id="theme-toggle" class="icon-btn" aria-label="Toggle dark and light mode">
+                        <button id="theme-toggle" class="icon-btn theme-toggle-btn" aria-label="Toggle dark and light mode" title="Toggle dark / light mode">
                             <i class="fa-solid fa-moon" aria-hidden="true"></i>
                         </button>
                     </div>
