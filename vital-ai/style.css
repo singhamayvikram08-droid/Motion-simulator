@@ -743,12 +743,6 @@ body.dark-mode .shimmer {
     box-shadow: 0 4px 16px var(--accent-glow);
 }
 
-.sidebar-theme-btn {
-    cursor: pointer;
-    margin-top: auto;
-    margin-bottom: 8px;
-}
-
 .main-content {
     flex: 1;
     padding: 24px 24px 24px 0;
