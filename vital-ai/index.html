@@ -669,8 +669,23 @@
                 <p>Hello! I am your VitalAI Health Companion. Ask me anything about diet plans, workouts, or your calculated biomarker results!</p>
             </div>
         </div>
+        <div id="chat-attachment-preview" class="chat-attachment-preview hidden">
+            <div class="attachment-info">
+                <i class="fa-solid fa-file-medical text-gradient" id="chat-attachment-icon"></i>
+                <img id="chat-attachment-thumb" class="attachment-thumb hidden" alt="Thumbnail preview">
+                <div>
+                    <div id="chat-attachment-name" class="attachment-name">report.pdf</div>
+                    <div id="chat-attachment-size" class="attachment-size">0 KB</div>
+                </div>
+            </div>
+            <button type="button" id="chat-remove-attachment" class="attachment-remove-btn" aria-label="Remove attached file">&times;</button>
+        </div>
         <div class="chat-footer">
-            <input type="text" id="chat-input" placeholder="Ask about diet, workout routines...">
+            <input type="file" id="chat-file-input" accept="image/*,.pdf,.txt,.csv,.json" style="display: none;">
+            <button type="button" id="chat-attach-btn" class="chat-attach-btn" aria-label="Upload health document or photo" title="Upload lab test, health report, photo, or metric file">
+                <i class="fa-solid fa-paperclip" aria-hidden="true"></i>
+            </button>
+            <input type="text" id="chat-input" placeholder="Ask about diet, workout, or upload health reports...">
             <button id="send-chat" aria-label="Send message"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
         </div>
     </div>

@@ -190,6 +190,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const sendChat = document.getElementById('send-chat');
+    const chatAttachBtn = document.getElementById('chat-attach-btn');
+    const chatFileInput = document.getElementById('chat-file-input');
+    const chatAttachmentPreview = document.getElementById('chat-attachment-preview');
+    const chatAttachmentName = document.getElementById('chat-attachment-name');
+    const chatAttachmentSize = document.getElementById('chat-attachment-size');
+    const chatAttachmentIcon = document.getElementById('chat-attachment-icon');
+    const chatAttachmentThumb = document.getElementById('chat-attachment-thumb');
+    const chatRemoveAttachment = document.getElementById('chat-remove-attachment');
 
     // Cookie Banner
     const cookieConsentBanner = document.getElementById('cookie-consent-banner');
@@ -751,20 +759,118 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
 
         closeChat?.addEventListener('click', () => chatbotWindow.classList.add('hidden'));
 
+        let currentAttachment = null;
+
+        if (chatAttachBtn && chatFileInput) {
+            chatAttachBtn.addEventListener('click', () => {
+                chatFileInput.click();
+            });
+
+            chatFileInput.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+
+                const sizeFormatted = file.size > 1048576 
+                    ? (file.size / 1048576).toFixed(1) + ' MB'
+                    : (file.size / 1024).toFixed(0) + ' KB';
+
+                currentAttachment = {
+                    file,
+                    name: file.name,
+                    size: sizeFormatted,
+                    type: file.type,
+                    isImage: file.type.startsWith('image/'),
+                    dataUrl: null,
+                    textContent: null
+                };
+
+                if (chatAttachmentName) chatAttachmentName.textContent = file.name;
+                if (chatAttachmentSize) chatAttachmentSize.textContent = sizeFormatted;
+
+                if (currentAttachment.isImage) {
+                    const reader = new FileReader();
+                    reader.onload = (rev) => {
+                        currentAttachment.dataUrl = rev.target.result;
+                        if (chatAttachmentThumb) {
+                            chatAttachmentThumb.src = rev.target.result;
+                            chatAttachmentThumb.classList.remove('hidden');
+                        }
+                        if (chatAttachmentIcon) chatAttachmentIcon.style.display = 'none';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    if (chatAttachmentThumb) chatAttachmentThumb.classList.add('hidden');
+                    if (chatAttachmentIcon) {
+                        chatAttachmentIcon.style.display = 'inline-block';
+                        chatAttachmentIcon.className = file.name.endsWith('.pdf')
+                            ? 'fa-solid fa-file-pdf text-gradient'
+                            : 'fa-solid fa-file-lines text-gradient';
+                    }
+                    if (file.type.includes('text') || file.name.endsWith('.txt') || file.name.endsWith('.csv') || file.name.endsWith('.json')) {
+                        const txtReader = new FileReader();
+                        txtReader.onload = (tev) => {
+                            currentAttachment.textContent = tev.target.result;
+                        };
+                        txtReader.readAsText(file);
+                    }
+                }
+
+                chatAttachmentPreview?.classList.remove('hidden');
+                chatInput?.focus();
+            });
+        }
+
+        if (chatRemoveAttachment) {
+            chatRemoveAttachment.addEventListener('click', () => {
+                currentAttachment = null;
+                if (chatFileInput) chatFileInput.value = '';
+                chatAttachmentPreview?.classList.add('hidden');
+                if (chatAttachmentThumb) {
+                    chatAttachmentThumb.src = '';
+                    chatAttachmentThumb.classList.add('hidden');
+                }
+                if (chatAttachmentIcon) chatAttachmentIcon.style.display = 'inline-block';
+            });
+        }
+
         const chatHistory = [
             {
                 role: "system",
-                content: "You are the VitalAI Assistant. You specialize in clinical health, fitness protocols, calorie counting, macronutrients, and biomarker analysis. Be encouraging, concise, and scientifically grounded. Never mention the underlying AI model name."
+                content: "You are the VitalAI Assistant. You specialize in clinical health, fitness protocols, calorie counting, macronutrients, and biomarker analysis. When the user attaches lab reports, documents, or photos, interpret and extract health insights thoroughly. Be encouraging, concise, and scientifically grounded. Never mention the underlying AI model name."
             }
         ];
 
         async function handleChat() {
             const msg = chatInput.value.trim();
-            if (!msg) return;
+            if (!msg && !currentAttachment) return;
 
-            appendMessage('user', msg);
+            const attachedToSend = currentAttachment;
+            currentAttachment = null;
+            if (chatFileInput) chatFileInput.value = '';
+            chatAttachmentPreview?.classList.add('hidden');
+            if (chatAttachmentThumb) {
+                chatAttachmentThumb.src = '';
+                chatAttachmentThumb.classList.add('hidden');
+            }
+
+            // Build user message HTML bubble
+            let userBubbleContent = '';
+            if (attachedToSend) {
+                if (attachedToSend.isImage && attachedToSend.dataUrl) {
+                    userBubbleContent += `<img src="${attachedToSend.dataUrl}" class="chat-message-attachment-img" alt="${attachedToSend.name}">`;
+                } else {
+                    userBubbleContent += `<div class="chat-message-attachment-file"><i class="fa-solid fa-file-medical text-gradient"></i> <span>${attachedToSend.name} (${attachedToSend.size})</span></div>`;
+                }
+            }
+            if (msg) {
+                userBubbleContent += `<p>${msg}</p>`;
+            } else if (attachedToSend) {
+                userBubbleContent += `<p style="font-size:0.85rem; opacity:0.85;">Attached: <strong>${attachedToSend.name}</strong></p>`;
+            }
+
+            appendMessage('user', userBubbleContent);
             chatInput.value = '';
-            trackEvent('chat_message_sent');
+            trackEvent('chat_message_sent', { has_attachment: !!attachedToSend });
 
             // Handle user pasting OpenRouter API Key
             if (msg.startsWith('sk-or-') || (msg.length > 25 && msg.includes('sk-'))) {
@@ -774,7 +880,19 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
                 return;
             }
 
-            chatHistory.push({ role: 'user', content: msg });
+            // Prepare prompt for AI
+            let promptText = msg;
+            if (attachedToSend) {
+                if (attachedToSend.textContent) {
+                    promptText = `[User Attached File: ${attachedToSend.name} (${attachedToSend.size})]\nFile Contents:\n${attachedToSend.textContent.slice(0, 3500)}\n\n${msg || "Please analyze this health file and provide clinical guidance."}`;
+                } else if (attachedToSend.isImage) {
+                    promptText = `[User uploaded an image/body scan: ${attachedToSend.name} (${attachedToSend.size})]\n\n${msg || "Please analyze this health upload and provide dietary, physical conditioning, and biomarker insights."}`;
+                } else {
+                    promptText = `[User attached medical/health document: ${attachedToSend.name} (${attachedToSend.size})]\n\n${msg || "Please provide clinical wellness advice based on this health document."}`;
+                }
+            }
+
+            chatHistory.push({ role: 'user', content: promptText });
             if (chatHistory.length > 12) {
                 chatHistory.splice(1, 2);
             }
