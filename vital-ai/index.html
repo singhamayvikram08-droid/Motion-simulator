@@ -410,6 +410,155 @@
                         </div>
                     </div>
 
+                    <!-- Feature 3: Interactive Goal Simulation & Predictive Analytics -->
+                    <div class="card glass-panel span-col" id="goal-simulator-card">
+                        <div class="card-header-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="card-icon-pill">
+                                    <i class="fa-solid fa-sliders text-gradient" aria-hidden="true"></i>
+                                </div>
+                                <div>
+                                    <h3 style="margin: 0;">Interactive Goal Simulator &amp; Predictive Timeline</h3>
+                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-sec);">
+                                        Simulate target body weight, projected BMI, metabolic rate, and clinical transition timelines.
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="baseline-badge" id="sim-baseline-badge">
+                                <i class="fa-solid fa-crosshairs" aria-hidden="true"></i> Baseline: <strong id="sim-baseline-val">68.0 kg</strong>
+                            </span>
+                        </div>
+
+                        <div class="simulator-card">
+                            <!-- Quick Goal Presets -->
+                            <div class="sim-presets-bar">
+                                <span class="presets-label"><i class="fa-solid fa-wand-magic-sparkles text-gradient" aria-hidden="true"></i> Quick Targets:</span>
+                                <button type="button" class="sim-preset-btn" id="preset-ideal-bmi" data-preset="ideal_bmi">
+                                    <i class="fa-solid fa-bullseye" aria-hidden="true"></i> Ideal BMI (22.0)
+                                </button>
+                                <button type="button" class="sim-preset-btn" id="preset-fat-cut" data-preset="fat_cut">
+                                    <i class="fa-solid fa-arrow-trend-down" aria-hidden="true"></i> -5 kg Cut
+                                </button>
+                                <button type="button" class="sim-preset-btn" id="preset-lean-bulk" data-preset="lean_bulk">
+                                    <i class="fa-solid fa-dumbbell" aria-hidden="true"></i> +3 kg Lean Bulk
+                                </button>
+                                <button type="button" class="sim-preset-btn reset" id="preset-reset" data-preset="reset">
+                                    <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reset Baseline
+                                </button>
+                            </div>
+
+                            <!-- Weight Slider -->
+                            <div class="simulator-slider-wrapper">
+                                <div class="slider-labels-row">
+                                    <span style="font-size: 0.88rem; color: var(--text-primary); font-weight: 700;">
+                                        <i class="fa-solid fa-weight-scale text-gradient" aria-hidden="true"></i> Target Weight:
+                                    </span>
+                                    <div class="slider-weight-stats">
+                                        <span class="slider-current-weight" id="sim-weight-display">68.0 kg</span>
+                                        <span class="slider-weight-delta" id="sim-weight-delta">0.0 kg (0.0%)</span>
+                                    </div>
+                                </div>
+                                <input type="range" class="vital-range-slider" id="weight-simulator-slider" min="40" max="120" step="0.5" value="68">
+                                <div class="slider-bounds-labels">
+                                    <span id="sim-slider-min">40 kg</span>
+                                    <span id="sim-slider-mid">Baseline: 68 kg</span>
+                                    <span id="sim-slider-max">120 kg</span>
+                                </div>
+                            </div>
+
+                            <!-- Target Pace Selector -->
+                            <div class="sim-pace-selector-row">
+                                <span class="pace-label"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i> Transition Pace:</span>
+                                <div class="pace-btn-group" role="group" aria-label="Transformation Pace">
+                                    <button type="button" class="pace-btn" data-pace="gentle" title="Gentle &amp; Highly Sustainable">
+                                        <span>🍃 Gentle</span>
+                                        <small class="pace-rate">~0.3 kg/wk</small>
+                                    </button>
+                                    <button type="button" class="pace-btn active" data-pace="recommended" title="Recommended Clinical Rate">
+                                        <span>⚖️ Recommended</span>
+                                        <small class="pace-rate">~0.5 kg/wk</small>
+                                    </button>
+                                    <button type="button" class="pace-btn" data-pace="aggressive" title="Aggressive (Higher Discipline)">
+                                        <span>⚡ Aggressive</span>
+                                        <small class="pace-rate">~0.8 kg/wk</small>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Real-time Simulated Metrics Grid -->
+                            <div class="sim-metrics-strip">
+                                <div class="sim-metric-pill">
+                                    <div class="lbl">Simulated BMI</div>
+                                    <div class="val text-gradient" id="sim-bmi-val">22.2</div>
+                                </div>
+                                <div class="sim-metric-pill">
+                                    <div class="lbl">Category</div>
+                                    <div class="val" id="sim-cat-val" style="font-size: 1.05rem; color: #10b981;">Normal Weight</div>
+                                </div>
+                                <div class="sim-metric-pill">
+                                    <div class="lbl">Simulated BMR</div>
+                                    <div class="val" id="sim-bmr-val">1,680 kcal</div>
+                                </div>
+                                <div class="sim-metric-pill">
+                                    <div class="lbl">Target Caloric Intake</div>
+                                    <div class="val" id="sim-cal-target-val" style="color: var(--primary);">2,100 kcal</div>
+                                </div>
+                                <div class="sim-metric-pill">
+                                    <div class="lbl">Est. Body Fat</div>
+                                    <div class="val" id="sim-bf-val">15.2%</div>
+                                </div>
+                                <div class="sim-metric-pill">
+                                    <div class="lbl">Est. Lean Mass</div>
+                                    <div class="val" id="sim-lean-val">57.7 kg</div>
+                                </div>
+                            </div>
+
+                            <!-- Transformation Timeline Box -->
+                            <div class="timeline-box">
+                                <div class="timeline-icon">
+                                    <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                        <h4 id="timeline-headline" style="margin: 0;">Maintenance Baseline Equilibrium</h4>
+                                        <span class="timeline-weeks-badge" id="sim-weeks-badge">Current Baseline</span>
+                                    </div>
+                                    <p id="timeline-details" style="margin: 6px 0 10px 0;">
+                                        Move the slider to simulate realistic timeframes, milestone completion dates, and nutritional calibration.
+                                    </p>
+                                    <div class="timeline-roadmap" id="timeline-roadmap">
+                                        <div class="milestone-item current">
+                                            <div class="milestone-dot"></div>
+                                            <div class="milestone-text">Start: <span id="milestone-start-wt">68.0 kg</span></div>
+                                        </div>
+                                        <div class="milestone-line"></div>
+                                        <div class="milestone-item halfway">
+                                            <div class="milestone-dot"></div>
+                                            <div class="milestone-text">Halfway: <span id="milestone-mid-date">--</span></div>
+                                        </div>
+                                        <div class="milestone-line"></div>
+                                        <div class="milestone-item target">
+                                            <div class="milestone-dot"></div>
+                                            <div class="milestone-text">Goal Target: <span id="milestone-goal-date">--</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Goal Action Bar -->
+                            <div class="sim-action-row">
+                                <button type="button" class="apply-goal-btn" id="apply-sim-goal-btn">
+                                    <i class="fa-solid fa-bullseye" aria-hidden="true"></i>
+                                    <span>Set as Active Health Trajectory</span>
+                                </button>
+                                <span class="sim-disclaimer-txt">
+                                    <i class="fa-solid fa-shield-halved text-gradient" aria-hidden="true"></i>
+                                    Clinically bounded weekly rates protect myofibrillar mass and metabolic homeostasis.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Loading State -->
                     <div id="ai-loading" class="card glass-panel hidden span-col" style="padding:60px; text-align:center;">
                         <i class="fa-solid fa-microchip fa-spin text-gradient" style="font-size: 50px; margin-bottom:20px;" aria-hidden="true"></i>
@@ -520,51 +669,7 @@
                             </div>
                         </div>
 
-                        <!-- Card 4: Interactive Goal Simulation & Predictive Analytics (Feature 3) -->
-                        <div class="card glass-panel span-col" id="goal-simulator-card">
-                            <h3 style="margin-bottom: 8px;"><i class="fa-solid fa-sliders text-gradient" aria-hidden="true"></i> Interactive Goal Simulation &amp; Predictive Timeline</h3>
-                            <p style="font-size: 0.85rem; color: var(--text-sec); margin-bottom: 20px;">
-                                Drag the interactive weight slider to simulate real-time updates on your projected BMI, body composition, and safe transition timeline.
-                            </p>
-                            <div class="simulator-card">
-                                <div class="simulator-slider-wrapper">
-                                    <div class="slider-labels-row">
-                                        <span style="font-size: 0.85rem; color: var(--text-sec); font-weight: 600;">Simulate Target Body Weight:</span>
-                                        <span class="slider-current-weight" id="sim-weight-display">-- kg</span>
-                                    </div>
-                                    <input type="range" class="vital-range-slider" id="weight-simulator-slider" min="40" max="150" step="0.5" value="70">
-                                </div>
 
-                                <div class="sim-metrics-strip">
-                                    <div class="sim-metric-pill">
-                                        <div class="lbl">Simulated BMI</div>
-                                        <div class="val" id="sim-bmi-val">--</div>
-                                    </div>
-                                    <div class="sim-metric-pill">
-                                        <div class="lbl">Category</div>
-                                        <div class="val" id="sim-cat-val" style="font-size: 1rem; color: #10b981;">--</div>
-                                    </div>
-                                    <div class="sim-metric-pill">
-                                        <div class="lbl">Simulated BMR</div>
-                                        <div class="val" id="sim-bmr-val">-- kcal</div>
-                                    </div>
-                                    <div class="sim-metric-pill">
-                                        <div class="lbl">Est. Body Fat</div>
-                                        <div class="val" id="sim-bf-val">--%</div>
-                                    </div>
-                                </div>
-
-                                <div class="timeline-box">
-                                    <div class="timeline-icon">
-                                        <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
-                                    </div>
-                                    <div class="timeline-content">
-                                        <h4 id="timeline-headline">AI Transformation Timeline</h4>
-                                        <p id="timeline-details">Move slider to simulate realistic timeframes and weekly target rates to transition safely.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Card 5: AI Longevity & Personalized Action Plan (Feature 6) -->
                         <div class="card glass-panel span-col">

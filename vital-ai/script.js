@@ -169,14 +169,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const fatsBarFill = document.getElementById('fats-bar-fill');
 
     // Interactive Goal Simulator Elements
+    const goalSimulatorCard = document.getElementById('goal-simulator-card');
     const weightSimulatorSlider = document.getElementById('weight-simulator-slider');
     const simWeightDisplay = document.getElementById('sim-weight-display');
+    const simWeightDelta = document.getElementById('sim-weight-delta');
+    const simBaselineVal = document.getElementById('sim-baseline-val');
+    const simSliderMin = document.getElementById('sim-slider-min');
+    const simSliderMid = document.getElementById('sim-slider-mid');
+    const simSliderMax = document.getElementById('sim-slider-max');
     const simBmiVal = document.getElementById('sim-bmi-val');
     const simCatVal = document.getElementById('sim-cat-val');
     const simBmrVal = document.getElementById('sim-bmr-val');
+    const simCalTargetVal = document.getElementById('sim-cal-target-val');
     const simBfVal = document.getElementById('sim-bf-val');
+    const simLeanVal = document.getElementById('sim-lean-val');
     const timelineHeadline = document.getElementById('timeline-headline');
     const timelineDetails = document.getElementById('timeline-details');
+    const simWeeksBadge = document.getElementById('sim-weeks-badge');
+    const milestoneStartWt = document.getElementById('milestone-start-wt');
+    const milestoneMidDate = document.getElementById('milestone-mid-date');
+    const milestoneGoalDate = document.getElementById('milestone-goal-date');
+    const applySimGoalBtn = document.getElementById('apply-sim-goal-btn');
+    const simPresetBtns = document.querySelectorAll('.sim-preset-btn');
+    const simPaceBtns = document.querySelectorAll('.pace-btn');
+    const navSimulatorLink = document.getElementById('nav-simulator-link');
+    const navDashboardLink = document.getElementById('nav-dashboard-link');
+    const navCalculatorLink = document.getElementById('nav-calculator-link');
 
     // Longevity & Metabolic Age Elements
     const metabolicAgeVal = document.getElementById('metabolic-age-val');
@@ -1425,57 +1443,182 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
         fetchOpenRouterAdvice(bmi, cat, calTarget, age, gender, h, w, ffmiDisplay, wthrDisplay, metabolicAge, pGrams, cGrams, fGrams, demographicData.title, goal);
     }
 
-    // Feature 3: Interactive Dynamic Weight Slider & Simulation
+    // Feature 3: Interactive Goal Simulation & Predictive Analytics
+    let activeSimulatorBaseline = null;
+    let currentPace = 'recommended';
+
+    function getSimulatorBaselineFromForm() {
+        let w = parseFloat(weightInput?.value);
+        if (isNaN(w) || w <= 0) w = 68;
+        let h = 1.75;
+        if (unit === 'metric') {
+            const cm = parseFloat(heightCm?.value);
+            if (!isNaN(cm) && cm > 0) h = cm / 100;
+        } else {
+            const ft = parseFloat(heightFt?.value) || 5;
+            const inn = parseFloat(heightIn?.value) || 9;
+            h = (ft * 12 + inn) * 0.0254;
+            w = w * 0.453592;
+        }
+        const a = parseInt(ageInput?.value) || 20;
+        const gRadio = document.querySelector('input[name="gender"]:checked');
+        const g = gRadio ? gRadio.value : 'male';
+        const eth = ethnicityScale ? ethnicityScale.value : 'who_standard';
+        const demo = getDemographicMappings(eth);
+        const act = activityLevel ? parseFloat(activityLevel.value) : 1.375;
+        const bmr = (10 * w) + (6.25 * (h * 100)) - (5 * a) + (g === 'male' ? 5 : -161);
+        const tdee = Math.round(bmr * act);
+        return {
+            currentWeight: Math.round(w * 10) / 10,
+            h,
+            age: a,
+            gender: g,
+            bmr: Math.round(bmr),
+            tdee: Math.round(tdee),
+            calTarget: Math.round(tdee),
+            demographicData: demo
+        };
+    }
+
     function initGoalSimulator(currentWeight, h, age, gender, bmr, tdee, calTarget, demographicData) {
         if (!weightSimulatorSlider) return;
 
-        weightSimulatorSlider.min = Math.max(35, Math.round(currentWeight - 25));
-        weightSimulatorSlider.max = Math.round(currentWeight + 25);
+        // If arguments omitted, compute baseline dynamically from current inputs
+        if (!currentWeight || !h) {
+            const fallback = getSimulatorBaselineFromForm();
+            currentWeight = fallback.currentWeight;
+            h = fallback.h;
+            age = fallback.age;
+            gender = fallback.gender;
+            bmr = fallback.bmr;
+            tdee = fallback.tdee;
+            calTarget = fallback.calTarget;
+            demographicData = fallback.demographicData;
+        }
+
+        activeSimulatorBaseline = { currentWeight, h, age, gender, bmr, tdee, calTarget, demographicData };
+
+        const unitLabel = unit === 'metric' ? 'kg' : 'lb';
+        const minW = Math.max(30, Math.round(currentWeight - 25));
+        const maxW = Math.round(currentWeight + 25);
+        weightSimulatorSlider.min = minW;
+        weightSimulatorSlider.max = maxW;
         weightSimulatorSlider.step = 0.5;
         weightSimulatorSlider.value = currentWeight;
 
+        if (simBaselineVal) simBaselineVal.textContent = `${currentWeight.toFixed(1)} ${unitLabel}`;
+        if (simSliderMin) simSliderMin.textContent = `${minW} ${unitLabel}`;
+        if (simSliderMid) simSliderMid.textContent = `Baseline: ${currentWeight.toFixed(1)} ${unitLabel}`;
+        if (simSliderMax) simSliderMax.textContent = `${maxW} ${unitLabel}`;
+
         function updateSimulation(targetWeight) {
-            if (simWeightDisplay) simWeightDisplay.textContent = `${targetWeight.toFixed(1)} kg`;
-            const simBmi = Math.round((targetWeight / (h * h)) * 10) / 10;
+            if (!activeSimulatorBaseline) return;
+            const b = activeSimulatorBaseline;
+
+            const curUnitLabel = unit === 'metric' ? 'kg' : 'lb';
+            if (simWeightDisplay) simWeightDisplay.textContent = `${targetWeight.toFixed(1)} ${curUnitLabel}`;
+
+            const delta = targetWeight - b.currentWeight;
+            const deltaPct = b.currentWeight > 0 ? ((delta / b.currentWeight) * 100).toFixed(1) : '0.0';
+            if (simWeightDelta) {
+                const sign = delta > 0 ? '+' : '';
+                simWeightDelta.textContent = `${sign}${delta.toFixed(1)} ${curUnitLabel} (${sign}${deltaPct}%)`;
+                simWeightDelta.style.color = Math.abs(delta) < 0.2 ? 'var(--text-sec)' : (delta < 0 ? '#10b981' : '#a855f7');
+            }
+
+            // Simulated BMI
+            const targetWeightKg = unit === 'metric' ? targetWeight : targetWeight * 0.453592;
+            const simBmi = Math.round((targetWeightKg / (b.h * b.h)) * 10) / 10;
             if (simBmiVal) simBmiVal.textContent = simBmi.toFixed(1);
 
-            const simCat = demographicData.categories.find(x => simBmi >= x.min && simBmi < x.max) || demographicData.categories[demographicData.categories.length - 1];
+            const simCat = b.demographicData.categories.find(x => simBmi >= x.min && simBmi < x.max) || b.demographicData.categories[b.demographicData.categories.length - 1];
             if (simCatVal) {
                 simCatVal.textContent = simCat.c;
                 simCatVal.style.color = simCat.col;
             }
 
-            const simBmr = Math.round((10 * targetWeight) + (6.25 * (h * 100)) - (5 * age) + (gender === 'male' ? 5 : -161));
+            // Simulated BMR
+            const simBmr = Math.round((10 * targetWeightKg) + (6.25 * (b.h * 100)) - (5 * b.age) + (b.gender === 'male' ? 5 : -161));
             if (simBmrVal) simBmrVal.textContent = `${simBmr} kcal`;
 
-            const simBf = Math.max(5, Math.min(50, Math.round(((1.20 * simBmi) + (0.23 * age) - (gender === 'male' ? 16.2 : 5.4)) * 10) / 10));
+            // Estimated Body Fat %
+            const simBf = Math.max(5, Math.min(50, Math.round(((1.20 * simBmi) + (0.23 * b.age) - (b.gender === 'male' ? 16.2 : 5.4)) * 10) / 10));
             if (simBfVal) simBfVal.textContent = `${simBf.toFixed(1)}%`;
 
-            // Transformation Timeline
-            const delta = targetWeight - currentWeight;
-            if (Math.abs(delta) < 0.2) {
-                if (timelineHeadline) timelineHeadline.textContent = 'Maintenance Equilibrium Baseline';
-                if (timelineDetails) timelineDetails.textContent = `At your current weight (${currentWeight.toFixed(1)} kg), maintain calibrated intake (${calTarget} kcal) to preserve metabolic homeostasis.`;
-            } else if (delta < 0) {
-                const lossKg = Math.abs(delta);
-                const safeWeeklyRate = 0.6; // kg / week
-                const weeks = Math.ceil(lossKg / safeWeeklyRate);
-                const targetDate = new Date();
-                targetDate.setDate(targetDate.getDate() + (weeks * 7));
-                const dateStr = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            // Estimated Lean Mass
+            const simLean = Math.round(targetWeightKg * (1 - (simBf / 100)) * 10) / 10;
+            if (simLeanVal) simLeanVal.textContent = `${simLean.toFixed(1)} ${curUnitLabel}`;
 
-                if (timelineHeadline) timelineHeadline.textContent = `Safe Fat Loss Target: -${lossKg.toFixed(1)} kg in ~${weeks} weeks`;
-                if (timelineDetails) timelineDetails.textContent = `Achievable by ${dateStr} via a calibrated -500 kcal daily deficit (~0.6 kg/week). Preserves lean muscle mass via adequate dietary protein.`;
+            // Rate per week based on selected pace
+            let weeklyRateKg = 0.5;
+            let calAdjustment = -500;
+
+            if (delta < 0) {
+                // Fat Loss
+                if (currentPace === 'gentle') {
+                    weeklyRateKg = 0.3;
+                    calAdjustment = -250;
+                } else if (currentPace === 'aggressive') {
+                    weeklyRateKg = 0.8;
+                    calAdjustment = -750;
+                } else {
+                    weeklyRateKg = 0.5;
+                    calAdjustment = -500;
+                }
+            } else if (delta > 0) {
+                // Muscle Gain / Hypertrophy
+                if (currentPace === 'gentle') {
+                    weeklyRateKg = 0.15;
+                    calAdjustment = 150;
+                } else if (currentPace === 'aggressive') {
+                    weeklyRateKg = 0.45;
+                    calAdjustment = 500;
+                } else {
+                    weeklyRateKg = 0.25;
+                    calAdjustment = 300;
+                }
             } else {
-                const gainKg = delta;
-                const safeWeeklyGain = 0.25; // kg / week lean
-                const weeks = Math.ceil(gainKg / safeWeeklyGain);
-                const targetDate = new Date();
-                targetDate.setDate(targetDate.getDate() + (weeks * 7));
-                const dateStr = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                calAdjustment = 0;
+            }
 
-                if (timelineHeadline) timelineHeadline.textContent = `Hypertrophy Target: +${gainKg.toFixed(1)} kg in ~${weeks} weeks`;
-                if (timelineDetails) timelineDetails.textContent = `Achievable by ${dateStr} at a controlled +300 kcal daily surplus with progressive resistance training to maximize lean myofibrillar growth.`;
+            const targetCalDaily = Math.max(1200, Math.round(b.tdee + calAdjustment));
+            if (simCalTargetVal) {
+                const adjTxt = calAdjustment !== 0 ? ` (${calAdjustment > 0 ? '+' : ''}${calAdjustment} kcal)` : ' (Maintain)';
+                simCalTargetVal.textContent = `${targetCalDaily} kcal${adjTxt}`;
+            }
+
+            // Timeline Calculation
+            if (Math.abs(delta) < 0.2) {
+                if (timelineHeadline) timelineHeadline.textContent = 'Maintenance Baseline Equilibrium';
+                if (timelineDetails) timelineDetails.textContent = `At your current baseline (${b.currentWeight.toFixed(1)} ${curUnitLabel}), your daily target of ${b.tdee} kcal maintains metabolic homeostasis and lean body composition.`;
+                if (simWeeksBadge) simWeeksBadge.textContent = 'Current Baseline';
+                if (milestoneStartWt) milestoneStartWt.textContent = `${b.currentWeight.toFixed(1)} ${curUnitLabel}`;
+                if (milestoneMidDate) milestoneMidDate.textContent = 'Today';
+                if (milestoneGoalDate) milestoneGoalDate.textContent = 'Active Now';
+            } else {
+                const deltaKg = Math.abs(unit === 'metric' ? delta : delta * 0.453592);
+                const weeks = Math.max(1, Math.ceil(deltaKg / weeklyRateKg));
+
+                const goalDate = new Date();
+                goalDate.setDate(goalDate.getDate() + (weeks * 7));
+                const goalDateStr = goalDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                const midDate = new Date();
+                midDate.setDate(midDate.getDate() + Math.round((weeks * 7) / 2));
+                const midDateStr = midDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                if (simWeeksBadge) simWeeksBadge.textContent = `~${weeks} weeks • ${goalDateStr}`;
+                if (milestoneStartWt) milestoneStartWt.textContent = `${b.currentWeight.toFixed(1)} ${curUnitLabel}`;
+                if (milestoneMidDate) milestoneMidDate.textContent = midDateStr;
+                if (milestoneGoalDate) milestoneGoalDate.textContent = goalDateStr;
+
+                if (delta < 0) {
+                    if (timelineHeadline) timelineHeadline.textContent = `Safe Fat Loss Target: -${Math.abs(delta).toFixed(1)} ${curUnitLabel} in ~${weeks} weeks`;
+                    if (timelineDetails) timelineDetails.textContent = `Achievable by ${goalDateStr} via a calibrated daily intake of ${targetCalDaily} kcal (~${weeklyRateKg} kg/week). Adequate dietary protein preserves lean myofibrillar mass and resting metabolic rate.`;
+                } else {
+                    if (timelineHeadline) timelineHeadline.textContent = `Hypertrophy Target: +${delta.toFixed(1)} ${curUnitLabel} in ~${weeks} weeks`;
+                    if (timelineDetails) timelineDetails.textContent = `Achievable by ${goalDateStr} at a controlled daily surplus of ${targetCalDaily} kcal with progressive resistance training to maximize myofibrillar tissue deposition while minimizing adipose gain.`;
+                }
             }
         }
 
@@ -1483,7 +1626,101 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
             updateSimulation(parseFloat(e.target.value));
         };
 
+        // Presets Listeners
+        simPresetBtns.forEach(btn => {
+            btn.onclick = () => {
+                const preset = btn.dataset.preset;
+                const b = activeSimulatorBaseline;
+                if (!b) return;
+
+                let target = b.currentWeight;
+                if (preset === 'ideal_bmi') {
+                    // Ideal BMI: 22.0
+                    const targetKg = 22.0 * b.h * b.h;
+                    target = unit === 'metric' ? targetKg : targetKg / 0.453592;
+                } else if (preset === 'fat_cut') {
+                    target = Math.max(weightSimulatorSlider.min, b.currentWeight - (unit === 'metric' ? 5 : 11));
+                } else if (preset === 'lean_bulk') {
+                    target = Math.min(weightSimulatorSlider.max, b.currentWeight + (unit === 'metric' ? 3 : 7));
+                } else if (preset === 'reset') {
+                    target = b.currentWeight;
+                }
+
+                target = Math.round(target * 10) / 10;
+                weightSimulatorSlider.value = target;
+                updateSimulation(target);
+                triggerFieldGlow(goalSimulatorCard);
+            };
+        });
+
+        // Pace Selector Listeners
+        simPaceBtns.forEach(btn => {
+            btn.onclick = () => {
+                simPaceBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPace = btn.dataset.pace || 'recommended';
+                updateSimulation(parseFloat(weightSimulatorSlider.value));
+            };
+        });
+
+        // Apply Goal Button Listener
+        if (applySimGoalBtn) {
+            applySimGoalBtn.onclick = () => {
+                const targetW = parseFloat(weightSimulatorSlider.value);
+                const b = activeSimulatorBaseline;
+                const curUnitLabel = unit === 'metric' ? 'kg' : 'lb';
+                const goalPayload = {
+                    targetWeight: targetW,
+                    baselineWeight: b ? b.currentWeight : targetW,
+                    unit: curUnitLabel,
+                    savedAt: new Date().toISOString()
+                };
+                localStorage.setItem('vital_active_goal', JSON.stringify(goalPayload));
+                showToast(`🎯 Health Trajectory Activated! Target: ${targetW.toFixed(1)} ${curUnitLabel} saved to your active profile.`);
+                triggerFieldGlow(goalSimulatorCard);
+            };
+        }
+
         updateSimulation(currentWeight);
+    }
+
+    // Sidebar Navigation Wire-up
+    if (navSimulatorLink) {
+        navSimulatorLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('active'));
+            navSimulatorLink.classList.add('active');
+            if (sidebarDrawer) sidebarDrawer.classList.remove('open');
+
+            if (goalSimulatorCard) {
+                goalSimulatorCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                triggerFieldGlow(goalSimulatorCard);
+            }
+        });
+    }
+
+    if (navDashboardLink) {
+        navDashboardLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('active'));
+            navDashboardLink.classList.add('active');
+            if (sidebarDrawer) sidebarDrawer.classList.remove('open');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    if (navCalculatorLink) {
+        navCalculatorLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('active'));
+            navCalculatorLink.classList.add('active');
+            if (sidebarDrawer) sidebarDrawer.classList.remove('open');
+            const bmiCard = document.getElementById('bmi-form-card');
+            if (bmiCard) {
+                bmiCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                triggerFieldGlow(bmiCard);
+            }
+        });
     }
 
     // Feature 5: Full AI Natural Language & Biomarker Parser
@@ -2182,5 +2419,12 @@ Detail precise nutritional timing, glycemic optimization, and targeted resistanc
         });
 
         gravityManager = null;
+    }
+
+    // Initialize Goal Simulator on initial load with default/form metrics
+    try {
+        initGoalSimulator();
+    } catch (err) {
+        console.warn('[VitalAI] Initial Goal Simulator bootstrap:', err);
     }
 });

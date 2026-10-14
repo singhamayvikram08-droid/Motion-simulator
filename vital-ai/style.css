@@ -2511,6 +2511,258 @@ body.dark-mode .message.ai {
     line-height: 1.4;
 }
 
+/* Enhanced Goal Simulator Styles */
+.card-icon-pill {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--icon-btn-hover-bg);
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.baseline-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    background: rgba(168, 85, 247, 0.12);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.sim-presets-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.presets-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-sec);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sim-preset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    background: var(--icon-btn-bg);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-sec);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sim-preset-btn:hover {
+    background: var(--icon-btn-hover-bg);
+    border-color: var(--primary);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+
+.sim-preset-btn.reset {
+    margin-left: auto;
+}
+
+.slider-weight-stats {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.slider-weight-delta {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-sec);
+}
+
+.slider-bounds-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+.sim-pace-selector-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 18px 0;
+    padding: 12px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+}
+
+.pace-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pace-btn-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.pace-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: var(--surface-sunken);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-sec);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.pace-btn .pace-rate {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.pace-btn:hover {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+}
+
+.pace-btn.active {
+    background: var(--primary-gradient);
+    border-color: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+.pace-btn.active .pace-rate {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.timeline-weeks-badge {
+    display: inline-flex;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.timeline-roadmap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+    overflow-x: auto;
+}
+
+.milestone-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-sec);
+    white-space: nowrap;
+}
+
+.milestone-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--text-muted);
+}
+
+.milestone-item.current .milestone-dot {
+    background: var(--primary);
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.milestone-item.target .milestone-dot {
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.milestone-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border-subtle);
+    min-width: 20px;
+}
+
+.sim-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.apply-goal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: var(--primary-gradient);
+    color: #ffffff;
+    border: none;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+.apply-goal-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px var(--accent-glow);
+}
+
+.sim-disclaimer-txt {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 /* Feature 6: AI Longevity & Metabolic Age */
 .longevity-banner {
     display: flex;
