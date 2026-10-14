@@ -507,8 +507,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return quoteEl;
     }
 
-    // ---- OPENROUTER NEMOTRON-3.5 AI ENGINE ----
-    const OPENROUTER_DEFAULT_KEY = (typeof atob === "function" ? atob("c2stb3ItdjEtMjJkY2I5YzdkNWIwOWE4NjZmZGM4MTAzZWM3N2JjYTEyOTAxYTUyMTJlMTQ0YTg3YzYwNzlkMGRiMTJhMDQ4MA==") : "");
+    // ---- OPENROUTER AI ENGINE ----
+    const OPENROUTER_DEFAULT_KEY = (typeof atob === 'function' ? atob("c2stb3ItdjEtMjJkY2I5YzdkNWIwOWE4NjZmZGM4MTAzZWM3N2JjYTEyOTAxYTUyMTJlMTQ0YTg3YzYwNzlkMGRiMTJhMDQ4MA==") : "");
     const OPENROUTER_MODEL = "nvidia/nemotron-3.5-lightning:free";
 
     function getApiKey() {
