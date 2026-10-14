@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---- ULTRA-PREMIUM DUAL THEME ENGINE (DARK OBSIDIAN / LIGHT LUXURY) ----
-    function applyTheme(isDark, animate = false) {
+    function applyTheme(isDark) {
         document.body.classList.toggle('dark-mode', isDark);
         document.documentElement.classList.toggle('dark-mode', isDark);
         try {
@@ -230,24 +230,15 @@ document.addEventListener('DOMContentLoaded', () => {
             themeMeta.setAttribute('content', isDark ? '#0b0416' : '#f7f4fb');
         }
 
-        // Sync all theme toggle buttons across Auth, Header, and Sidebar
+        // Sync all theme toggle buttons across Auth and Header
         const toggleBtns = document.querySelectorAll('.theme-toggle-btn');
         toggleBtns.forEach(btn => {
             const icon = btn.querySelector('i');
             if (icon) {
                 icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
             }
-            const label = btn.querySelector('.theme-toggle-label');
-            if (label) {
-                label.textContent = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-            }
             btn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
             btn.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
-            if (animate) {
-                btn.classList.remove('theme-toggle-pop');
-                void btn.offsetWidth; // trigger reflow for smooth re-trigger
-                btn.classList.add('theme-toggle-pop');
-            }
         });
 
         // Dynamic Chart Color Re-rendering
@@ -259,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Theme immediately on load
     const savedTheme = localStorage.getItem('ai_theme');
     const isInitiallyDark = savedTheme !== 'light'; // Default to ultra-premium dark cyberpunk
-    applyTheme(isInitiallyDark, false);
+    applyTheme(isInitiallyDark);
 
     // Global Event Delegation for all Theme Toggle Buttons
     document.addEventListener('click', (e) => {
@@ -268,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const currentlyDark = document.body.classList.contains('dark-mode');
         const nextDark = !currentlyDark;
-        applyTheme(nextDark, true);
+        applyTheme(nextDark);
         trackEvent('theme_toggled', { mode: nextDark ? 'dark' : 'light' });
     });
 

@@ -800,15 +800,6 @@ body.dark-mode .shimmer {
     box-shadow: 0 4px 14px var(--accent-glow);
 }
 
-.theme-toggle-pop {
-    animation: toggleSpin 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes toggleSpin {
-    0% { transform: scale(1) rotate(0deg); }
-    50% { transform: scale(1.22) rotate(180deg); }
-    100% { transform: scale(1) rotate(360deg); }
-}
 
 .dashboard-grid {
     display: grid;
