@@ -381,30 +381,34 @@ function appendMessage(role, text) {
 }
 
 // Initial Greeting
-if (!localStorage.getItem('openrouter_key_attendance')) {
-    appendMessage('ai', 'Hi! I am the Attendocast AI Advisor.<br><br>Please paste your OpenRouter API Key (sk-or-...) below to unlock my advanced analytics.');
+if (!sessionStorage.getItem('openrouter_key_attendance') && !localStorage.getItem('openrouter_key_attendance')) {
+    appendMessage('ai', 'Hi! I am the Attendocast AI Advisor.<br><br>Please enter your session OpenRouter API Key (sk-or-...) below to unlock analytics.');
 } else {
-    appendMessage('ai', 'Hi there! Looking to bunk a class? Drop me a question and I\'ll run the numbers.');
+    appendMessage('ai', 'Hi there! Looking to analyze your attendance? Drop me a question and I\'ll run the numbers.');
 }
 
 async function handleChat() {
     const msg = chatInput.value.trim();
     if (!msg) return;
 
-    appendMessage('user', msg);
     chatInput.value = '';
 
-    // Override / Save API Key at any time
+    // Override / Save API Key at any time (Mask from DOM and persist in session only)
     if (msg.startsWith('sk-or-') || (msg.length > 20 && msg.startsWith('sk-'))) {
-        localStorage.setItem('openrouter_key_attendance', msg);
-        chatMessages.innerHTML = '';
-        appendMessage('ai', 'New API Key saved securely via LocalStorage! 🚀 I am fully operational. What\'s your attendance question?');
+        appendMessage('user', 'sk-or-•••••••••••••••••••••••• [KEY CONFIGURED]');
+        sessionStorage.setItem('openrouter_key_attendance', msg);
+        try { localStorage.removeItem('openrouter_key_attendance'); } catch (_) {}
+        setTimeout(() => {
+            appendMessage('ai', 'API Key configured for this active session (never persisted to unencrypted disk). What is your attendance question?');
+        }, 300);
         return;
     }
 
-    const existingKey = localStorage.getItem('openrouter_key_attendance');
+    appendMessage('user', msg);
+
+    const existingKey = sessionStorage.getItem('openrouter_key_attendance') || localStorage.getItem('openrouter_key_attendance');
     if (!existingKey) {
-        appendMessage('ai', 'That doesn\'t look like a valid OpenRouter API key. Please paste a valid key starting with `sk-or-`.');
+        appendMessage('ai', 'Please provide a valid session OpenRouter API key starting with `sk-or-` to enable AI inference.');
         return;
     }
 

@@ -8,7 +8,30 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+dist
+dist-ssr
 *.local
+
+# Secrets, Environment Files & Private Credentials
+.env
+.env.*
+!*.env.example
+**/.env
+**/.env.*
+!**/.env.example
+snackdash/.env
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.id_rsa
+*.id_ed25519
+serviceAccountKey.json
+google-services.json
+credentials.json
+secrets/
 
 # Editor directories and files
 .vscode/*
@@ -20,19 +43,3 @@ node_modules
 *.njsproj
 *.sln
 *.sw?
-
-# Environment & credentials
-.env
-.env*.local
-*.env
-!*.env.example
-
-# Next.js & Python
-.next/
-*.tsbuildinfo
-venv/
-.venv/
-__pycache__/
-*.pyc
-*.db
-scratch/
