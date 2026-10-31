@@ -132,8 +132,11 @@ if (authForm) {
 
     try {
       if (activeRole === 'admin') {
-        // Hardcoded Admin Login
-        if (email === ADMIN_SCANNER_EMAIL && password === ADMIN_SCANNER_PASS) {
+        // Master Admin Credentials
+        const isMasterAdmin = (email === ADMIN_SCANNER_EMAIL && password === ADMIN_SCANNER_PASS) ||
+          (email.toLowerCase() === 'nextai.admin1910@dsu.edu.com' && (password === 'Adminnextai@9876' || password === '63072W'));
+
+        if (isMasterAdmin) {
           localStorage.setItem('snackdash_admin_session', 'true');
           showToast('Admin Unlocked!', 'success');
           setTimeout(() => window.location.href = 'admin.html', 800);
@@ -145,8 +148,11 @@ if (authForm) {
       }
 
       if (activeRole === 'scanner') {
-        // Hardcoded Scanner Login
-        if (email === ADMIN_SCANNER_EMAIL && password === ADMIN_SCANNER_PASS) {
+        // Master Scanner / Admin Credentials
+        const isMasterScanner = (email === ADMIN_SCANNER_EMAIL && password === ADMIN_SCANNER_PASS) ||
+          (email.toLowerCase() === 'nextai.admin1910@dsu.edu.com' && (password === 'Adminnextai@9876' || password === '63072W'));
+
+        if (isMasterScanner) {
           localStorage.setItem('snackdash_scanner_session', 'true');
           showToast('Scanner Unlocked!', 'success');
           setTimeout(() => window.location.href = 'scanner.html', 800);
